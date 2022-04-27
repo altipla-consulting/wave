@@ -7,7 +7,7 @@ Internal tool to build and deploy applications.
 ## Install
 
 ```shell
-go install github.com/altipla-consulting/gendc@latest
+go install github.com/altipla-consulting/wave@latest
 ```
 
 
