@@ -1,0 +1,735 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "foo-sentry"
+      },
+      "spec": {
+        "replicas": 1,
+        "revisionHistoryLimit": 10,
+        "selector": {
+          "matchLabels": {
+            "app": "foo-sentry"
+          }
+        },
+        "strategy": {
+          "rollingUpdate": {
+            "maxUnavailable": 0
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "foo-sentry"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "env": [
+                  {
+                    "name": "VERSION",
+                    "value": "foo-version"
+                  },
+                  {
+                    "name": "K_SERVICE",
+                    "value": "foo-container"
+                  },
+                  {
+                    "name": "SENTRY_DSN",
+                    "value": "foo-sentry-project-dsn"
+                  }
+                ],
+                "image": "eu.gcr.io/foo",
+                "name": "foo-container",
+                "ports": [],
+                "volumeMounts": []
+              }
+            ],
+            "volumes": []
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "aadpodidentity.k8s.io/v1",
+      "kind": "AzureIdentityBinding",
+      "metadata": {
+        "name": "foo-identity"
+      },
+      "spec": {
+        "azureIdentity": "foo-identity",
+        "selector": "foo-identity"
+      }
+    },
+    {
+      "apiVersion": "aadpodidentity.k8s.io/v1",
+      "kind": "AzureIdentity",
+      "metadata": {
+        "name": "foo-identity"
+      },
+      "spec": {
+        "clientID": "foo-client-id",
+        "resourceID": "foo-resource-id",
+        "type": 0
+      }
+    },
+    {
+      "apiVersion": "batch/v1",
+      "kind": "CronJob",
+      "metadata": {
+        "name": "foo-cronjob"
+      },
+      "spec": {
+        "jobTemplate": {
+          "spec": {
+            "template": {
+              "spec": {
+                "containers": [],
+                "restartPolicy": "OnFailure"
+              }
+            }
+          }
+        },
+        "schedule": "* * * * *"
+      }
+    },
+    {
+      "apiVersion": "batch/v1",
+      "kind": "CronJob",
+      "metadata": {
+        "name": "foo-cronjob"
+      },
+      "spec": {
+        "jobTemplate": {
+          "spec": {
+            "template": {
+              "spec": {
+                "containers": [
+                  {
+                    "env": [
+                      {
+                        "name": "VERSION",
+                        "value": "foo-version"
+                      },
+                      {
+                        "name": "K_SERVICE",
+                        "value": "foo-container"
+                      }
+                    ],
+                    "image": "eu.gcr.io/foo:foo-version",
+                    "name": "foo-container",
+                    "ports": [],
+                    "volumeMounts": []
+                  }
+                ],
+                "restartPolicy": "OnFailure"
+              }
+            }
+          }
+        },
+        "schedule": "* * * * *"
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "foo-deployment"
+      },
+      "spec": {
+        "replicas": 1,
+        "revisionHistoryLimit": 10,
+        "selector": {
+          "matchLabels": {
+            "app": "foo-deployment"
+          }
+        },
+        "strategy": {
+          "rollingUpdate": {
+            "maxUnavailable": 0
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "aadpodidbinding": "foo-identity",
+              "app": "foo-deployment"
+            }
+          },
+          "spec": {
+            "containers": [],
+            "volumes": []
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "foo-deployment"
+      },
+      "spec": {
+        "replicas": 1,
+        "revisionHistoryLimit": 10,
+        "selector": {
+          "matchLabels": {
+            "app": "foo-deployment"
+          }
+        },
+        "strategy": {
+          "rollingUpdate": {
+            "maxUnavailable": 0
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "foo-deployment"
+            }
+          },
+          "spec": {
+            "containers": [],
+            "volumes": []
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "foo-deployment"
+      },
+      "spec": {
+        "replicas": 1,
+        "revisionHistoryLimit": 10,
+        "selector": {
+          "matchLabels": {
+            "app": "foo-deployment"
+          }
+        },
+        "strategy": {
+          "rollingUpdate": {
+            "maxUnavailable": 0
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "foo-deployment"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "env": [
+                  {
+                    "name": "VERSION",
+                    "value": "foo-version"
+                  },
+                  {
+                    "name": "K_SERVICE",
+                    "value": "foo-container"
+                  },
+                  {
+                    "name": "K8S_POD_IP",
+                    "valueFrom": {
+                      "fieldRef": {
+                        "fieldPath": "status.podIP"
+                      }
+                    }
+                  }
+                ],
+                "image": "eu.gcr.io/foo:foo-version",
+                "livenessProbe": {
+                  "httpGet": {
+                    "path": "/health",
+                    "port": 8000
+                  },
+                  "initialDelaySeconds": 10,
+                  "timeoutSeconds": 5
+                },
+                "name": "foo-container",
+                "ports": [
+                  {
+                    "containerPort": 8080,
+                    "name": "foo-port"
+                  },
+                  {
+                    "containerPort": 8081,
+                    "name": "bar-port"
+                  }
+                ],
+                "readinessProbe": {
+                  "httpGet": {
+                    "path": "/health",
+                    "port": 8000
+                  },
+                  "initialDelaySeconds": 10,
+                  "timeoutSeconds": 5
+                },
+                "resources": {
+                  "limits": {
+                    "memory": "256Mi"
+                  },
+                  "requests": {
+                    "cpu": "2m",
+                    "memory": "256Mi"
+                  }
+                },
+                "volumeMounts": []
+              }
+            ],
+            "volumes": []
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "foo-deployment"
+      },
+      "spec": {
+        "replicas": 1,
+        "revisionHistoryLimit": 10,
+        "selector": {
+          "matchLabels": {
+            "app": "foo-deployment"
+          }
+        },
+        "strategy": {
+          "rollingUpdate": {
+            "maxUnavailable": 0
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "foo-deployment"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "env": [
+                  {
+                    "name": "VERSION",
+                    "value": "foo-version"
+                  },
+                  {
+                    "name": "K_SERVICE",
+                    "value": "foo-container"
+                  },
+                  {
+                    "name": "GOOGLE_APPLICATION_CREDENTIALS",
+                    "value": "/etc/identity/service-account.json"
+                  }
+                ],
+                "image": "eu.gcr.io/foo",
+                "name": "foo-container",
+                "ports": [],
+                "volumeMounts": [
+                  {
+                    "mountPath": "/etc/identity",
+                    "name": "google-identity",
+                    "readOnly": true
+                  }
+                ]
+              }
+            ],
+            "volumes": [
+              {
+                "name": "google-identity",
+                "secret": {
+                  "secretName": "foo-deployment-identity"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "data": {
+        "trigger": "YXV0by1pZGVudGl0eQ=="
+      },
+      "kind": "Secret",
+      "metadata": {
+        "name": "foo-deployment-identity"
+      },
+      "type": "Opaque"
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "foo-deployment"
+      },
+      "spec": {
+        "replicas": 1,
+        "revisionHistoryLimit": 10,
+        "selector": {
+          "matchLabels": {
+            "app": "foo-deployment"
+          }
+        },
+        "strategy": {
+          "rollingUpdate": {
+            "maxUnavailable": 0
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "foo-deployment"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "env": [
+                  {
+                    "name": "VERSION",
+                    "value": "foo-version"
+                  },
+                  {
+                    "name": "K_SERVICE",
+                    "value": "foo-container"
+                  }
+                ],
+                "image": "eu.gcr.io/foo:foo-version",
+                "name": "foo-container",
+                "ports": [],
+                "volumeMounts": []
+              },
+              {
+                "env": [
+                  {
+                    "name": "VERSION",
+                    "value": "foo-version"
+                  },
+                  {
+                    "name": "K_SERVICE",
+                    "value": "bar-container"
+                  }
+                ],
+                "image": "eu.gcr.io/bar",
+                "name": "bar-container",
+                "ports": [],
+                "volumeMounts": []
+              }
+            ],
+            "volumes": []
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "foo-deployment"
+      },
+      "spec": {
+        "replicas": 1,
+        "revisionHistoryLimit": 10,
+        "selector": {
+          "matchLabels": {
+            "app": "foo-deployment"
+          }
+        },
+        "strategy": {
+          "rollingUpdate": {
+            "maxUnavailable": 0
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "foo-deployment"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "env": [
+                  {
+                    "name": "VERSION",
+                    "value": "foo-version"
+                  },
+                  {
+                    "name": "K_SERVICE",
+                    "value": "foo-container"
+                  }
+                ],
+                "image": "eu.gcr.io/foo:foo-version",
+                "name": "foo-container",
+                "ports": [],
+                "volumeMounts": []
+              }
+            ],
+            "volumes": []
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "foo-service"
+      },
+      "spec": {
+        "externalTrafficPolicy": "Local",
+        "loadBalancerIP": "1.2.3.4",
+        "ports": [],
+        "selector": {
+          "app": "foo-service"
+        },
+        "type": "LoadBalancer"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "foo-service"
+      },
+      "spec": {
+        "externalTrafficPolicy": "Local",
+        "loadBalancerIP": "1.2.3.4",
+        "ports": [],
+        "selector": {
+          "app": "foo-selector"
+        },
+        "type": "LoadBalancer"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "foo-service-headless"
+      },
+      "spec": {
+        "clusterIP": "None",
+        "ports": [],
+        "selector": {
+          "app": "foo-service"
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "foo-service-headless"
+      },
+      "spec": {
+        "clusterIP": "None",
+        "ports": [
+          {
+            "name": "same-port",
+            "port": 8080,
+            "targetPort": 8080
+          },
+          {
+            "name": "different-port",
+            "port": 8081,
+            "targetPort": 8082
+          }
+        ],
+        "selector": {
+          "app": "foo-service"
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "foo-service"
+      },
+      "spec": {
+        "ports": [],
+        "selector": {
+          "app": "foo-service"
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "foo-service"
+      },
+      "spec": {
+        "ports": [
+          {
+            "name": "same-port",
+            "port": 8080,
+            "targetPort": 8080
+          },
+          {
+            "name": "different-port",
+            "port": 8081,
+            "targetPort": 8082
+          }
+        ],
+        "selector": {
+          "app": "foo-service"
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "ServiceAccount",
+      "metadata": {
+        "name": "foo-service-account"
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "StatefulSet",
+      "metadata": {
+        "name": "foo-statefulset"
+      },
+      "spec": {
+        "selector": {
+          "matchLabels": {
+            "app": "foo-statefulset"
+          }
+        },
+        "serviceName": "foo-statefulset",
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "foo-statefulset"
+            }
+          },
+          "spec": {
+            "containers": [],
+            "volumes": []
+          }
+        },
+        "updateStrategy": {
+          "type": "RollingUpdate"
+        }
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "StatefulSet",
+      "metadata": {
+        "name": "foo-statefulset"
+      },
+      "spec": {
+        "selector": {
+          "matchLabels": {
+            "app": "foo-statefulset"
+          }
+        },
+        "serviceName": "foo-statefulset",
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "foo-statefulset"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "env": [
+                  {
+                    "name": "VERSION",
+                    "value": "foo-version"
+                  },
+                  {
+                    "name": "K_SERVICE",
+                    "value": "foo-container"
+                  }
+                ],
+                "image": "eu.gcr.io/foo:foo-version",
+                "name": "foo-container",
+                "ports": [],
+                "volumeMounts": []
+              }
+            ],
+            "volumes": []
+          }
+        },
+        "updateStrategy": {
+          "type": "RollingUpdate"
+        }
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "StatefulSet",
+      "metadata": {
+        "name": "foo-statefulset"
+      },
+      "spec": {
+        "selector": {
+          "matchLabels": {
+            "app": "foo-statefulset"
+          }
+        },
+        "serviceName": "foo-statefulset",
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "foo-statefulset"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "env": [
+                  {
+                    "name": "VERSION",
+                    "value": "foo-version"
+                  },
+                  {
+                    "name": "K_SERVICE",
+                    "value": "foo-container"
+                  }
+                ],
+                "image": "eu.gcr.io/foo:foo-version",
+                "name": "foo-container",
+                "ports": [],
+                "volumeMounts": [
+                  {
+                    "mountPath": "/etc/path",
+                    "name": "foo-volume"
+                  }
+                ]
+              }
+            ],
+            "volumes": [
+              {
+                "gcePersistentDisk": {
+                  "fsType": "ext4",
+                  "pdName": "foo-disk"
+                },
+                "name": "foo-volume"
+              }
+            ]
+          }
+        },
+        "updateStrategy": {
+          "type": "RollingUpdate"
+        }
+      }
+    }
+  ]
+}
