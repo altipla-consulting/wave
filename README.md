@@ -53,3 +53,13 @@ You can deploy multiple containers at the same time:
 ```shell
 wave deploy foo bar baz --project $GOOGLE_PROJECT --sentry foo-name
 ```
+
+
+## Contributing
+
+You can make pull requests or create issues in GitHub. Any code you send should be formatted using `make gofmt`.
+
+
+## License
+
+[MIT License](LICENSE)
