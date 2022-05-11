@@ -4,6 +4,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"github.com/altipla-consulting/wave/internal/ar"
 	"github.com/altipla-consulting/wave/internal/build"
 	"github.com/altipla-consulting/wave/internal/deploy"
 	"github.com/altipla-consulting/wave/internal/kubernetes"
@@ -14,12 +15,13 @@ import (
 var flagDebug bool
 
 func init() {
-	cmdRoot.PersistentFlags().BoolVarP(&flagDebug, "debug", "d", false, "Enable debug logging for this tool")
+	cmdRoot.PersistentFlags().BoolVarP(&flagDebug, "debug", "d", false, "Enable debug logging for this tool.")
+	cmdRoot.AddCommand(ar.Cmd)
 	cmdRoot.AddCommand(build.Cmd)
 	cmdRoot.AddCommand(deploy.Cmd)
+	cmdRoot.AddCommand(kubernetes.Cmd)
 	cmdRoot.AddCommand(netlify.Cmd)
 	cmdRoot.AddCommand(preview.Cmd)
-	cmdRoot.AddCommand(kubernetes.Cmd)
 }
 
 var cmdRoot = &cobra.Command{
