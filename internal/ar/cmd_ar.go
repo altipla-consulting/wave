@@ -4,24 +4,26 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"libs.altipla.consulting/errors"
+
+	"github.com/altipla-consulting/wave/internal/query"
 )
 
 var (
-	flagProject string
-	flagRepo    string
-	flagSource  string
+	flagProject    string
+	flagRepo       string
+	flagSource     string
+	flagProduction bool
 )
 
 func init() {
 	Cmd.Flags().StringVar(&flagProject, "project", "", "Google Cloud project where the container will be stored. Defaults to the GOOGLE_PROJECT environment variable.")
 	Cmd.Flags().StringVar(&flagRepo, "repo", "", "Artifact Registry repository name where the container will be stored.")
 	Cmd.Flags().StringVar(&flagSource, "source", "", "Source folder. Defaults to a folder with the name of the app.")
+	Cmd.Flags().BoolVar(&flagProduction, "production", false, "Deploy a production version.")
 	Cmd.MarkFlagRequired("repo")
 }
 
@@ -37,14 +39,7 @@ var Cmd = &cobra.Command{
 			flagProject = os.Getenv("GOOGLE_PROJECT")
 		}
 
-		version := time.Now().Format("20060102") + "." + os.Getenv("BUILD_NUMBER")
-		if ref := os.Getenv("GITHUB_REF"); ref != "" {
-			version = path.Base(ref)
-		}
-		if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" {
-			version += ".preview"
-		}
-
+		version := query.Version(flagProduction)
 		logger := log.WithFields(log.Fields{
 			"name":    app,
 			"version": version,
