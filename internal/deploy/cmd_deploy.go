@@ -3,14 +3,14 @@ package deploy
 import (
 	"os"
 	"os/exec"
-	"path"
 	"strings"
-	"time"
 
 	"github.com/atlassian/go-sentry-api"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"libs.altipla.consulting/errors"
+
+	"github.com/altipla-consulting/wave/internal/query"
 )
 
 var (
@@ -22,18 +22,19 @@ var (
 	flagEnvSecret      []string
 	flagTag            string
 	flagAlwaysOn       bool
+	flagProduction     bool
 )
 
 func init() {
-	Cmd.PersistentFlags().StringVar(&flagProject, "project", "", "Google Cloud project where the container will be stored. Defaults to the GOOGLE_PROJECT environment variable.")
-	Cmd.PersistentFlags().StringVar(&flagMemory, "memory", "", "Memory available inside the Cloud Run application. Default: 256Mi.")
-	Cmd.PersistentFlags().StringVar(&flagServiceAccount, "service-account", "", "Service account. Defaults to one with the name of the application.")
-	Cmd.PersistentFlags().StringVar(&flagSentry, "sentry", "", "Name of the sentry project to configure.")
-	Cmd.PersistentFlags().StringSliceVar(&flagVolumeSecret, "volume-secret", nil, "Secrets to mount as volumes.")
-	Cmd.PersistentFlags().StringSliceVar(&flagEnvSecret, "env-secret", nil, "Secrets to mount as environment variables.")
-	Cmd.PersistentFlags().StringVar(&flagTag, "tag", "", "Name of the revision included in the URL. Defaults to the Gerrit change and patchset.")
-	Cmd.PersistentFlags().BoolVar(&flagAlwaysOn, "always-on", false, "App will always have CPU even if it's in the background without requests.")
-
+	Cmd.Flags().StringVar(&flagProject, "project", "", "Google Cloud project where the container will be stored. Defaults to the GOOGLE_PROJECT environment variable.")
+	Cmd.Flags().StringVar(&flagMemory, "memory", "", "Memory available inside the Cloud Run application. Default: 256Mi.")
+	Cmd.Flags().StringVar(&flagServiceAccount, "service-account", "", "Service account. Defaults to one with the name of the application.")
+	Cmd.Flags().StringVar(&flagSentry, "sentry", "", "Name of the sentry project to configure.")
+	Cmd.Flags().StringSliceVar(&flagVolumeSecret, "volume-secret", nil, "Secrets to mount as volumes.")
+	Cmd.Flags().StringSliceVar(&flagEnvSecret, "env-secret", nil, "Secrets to mount as environment variables.")
+	Cmd.Flags().StringVar(&flagTag, "tag", "", "Name of the revision included in the URL. Defaults to the Gerrit change and patchset.")
+	Cmd.Flags().BoolVar(&flagAlwaysOn, "always-on", false, "App will always have CPU even if it's in the background without requests.")
+	Cmd.Flags().BoolVar(&flagProduction, "production", false, "Deploy a production version.")
 	Cmd.MarkPersistentFlagRequired("sentry")
 }
 
@@ -58,6 +59,9 @@ var Cmd = &cobra.Command{
 				flagMemory = "256Mi"
 			}
 		}
+		if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" && flagTag == "" {
+			flagTag = "preview-" + os.Getenv("GERRIT_CHANGE_NUMBER") + "-" + os.Getenv("GERRIT_PATCHSET_NUMBER")
+		}
 
 		client, err := sentry.NewClient(os.Getenv("SENTRY_AUTH_TOKEN"), nil, nil)
 		if err != nil {
@@ -72,16 +76,7 @@ var Cmd = &cobra.Command{
 			return errors.Trace(err)
 		}
 
-		version := time.Now().Format("20060102") + "." + os.Getenv("BUILD_NUMBER")
-		if ref := os.Getenv("GITHUB_REF"); ref != "" {
-			version = path.Base(ref)
-		}
-		if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" {
-			version += ".preview"
-			if flagTag == "" {
-				flagTag = "preview-" + os.Getenv("GERRIT_CHANGE_NUMBER") + "-" + os.Getenv("GERRIT_PATCHSET_NUMBER")
-			}
-		}
+		version := query.Version(flagProduction)
 
 		log.WithFields(log.Fields{
 			"name":            app,
