@@ -22,7 +22,6 @@ var (
 	flagEnvSecret      []string
 	flagTag            string
 	flagAlwaysOn       bool
-	flagProduction     bool
 )
 
 func init() {
@@ -34,7 +33,6 @@ func init() {
 	Cmd.Flags().StringSliceVar(&flagEnvSecret, "env-secret", nil, "Secrets to mount as environment variables.")
 	Cmd.Flags().StringVar(&flagTag, "tag", "", "Name of the revision included in the URL. Defaults to the Gerrit change and patchset.")
 	Cmd.Flags().BoolVar(&flagAlwaysOn, "always-on", false, "App will always have CPU even if it's in the background without requests.")
-	Cmd.Flags().BoolVar(&flagProduction, "production", false, "Deploy a production version.")
 	Cmd.MarkPersistentFlagRequired("sentry")
 }
 
@@ -76,7 +74,7 @@ var Cmd = &cobra.Command{
 			return errors.Trace(err)
 		}
 
-		version := query.Version(flagProduction)
+		version := query.Version()
 
 		log.WithFields(log.Fields{
 			"name":            app,

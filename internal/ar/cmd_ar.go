@@ -13,17 +13,15 @@ import (
 )
 
 var (
-	flagProject    string
-	flagRepo       string
-	flagSource     string
-	flagProduction bool
+	flagProject string
+	flagRepo    string
+	flagSource  string
 )
 
 func init() {
 	Cmd.Flags().StringVar(&flagProject, "project", "", "Google Cloud project where the container will be stored. Defaults to the GOOGLE_PROJECT environment variable.")
 	Cmd.Flags().StringVar(&flagRepo, "repo", "", "Artifact Registry repository name where the container will be stored.")
 	Cmd.Flags().StringVar(&flagSource, "source", "", "Source folder. Defaults to a folder with the name of the app.")
-	Cmd.Flags().BoolVar(&flagProduction, "production", false, "Deploy a production version.")
 	Cmd.MarkFlagRequired("repo")
 }
 
@@ -39,7 +37,7 @@ var Cmd = &cobra.Command{
 			flagProject = os.Getenv("GOOGLE_PROJECT")
 		}
 
-		version := query.Version(flagProduction)
+		version := query.Version()
 		logger := log.WithFields(log.Fields{
 			"name":    app,
 			"version": version,
