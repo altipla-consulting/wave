@@ -26,6 +26,11 @@ func Version() string {
 		version = path.Base(ref)
 	}
 
+	// Custom override.
+	if ref := os.Getenv("WAVE_VERSION"); ref != "" {
+		version = ref
+	}
+
 	return version
 }
 

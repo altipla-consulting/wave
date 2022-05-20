@@ -12,7 +12,7 @@ import (
 )
 
 func TestScript(t *testing.T) {
-	os.Setenv("GITHUB_REF", "foo-version")
+	os.Setenv("WAVE_VERSION", "foo-version")
 
 	content, err := ioutil.ReadFile("test.jsonnet")
 	require.NoError(t, err)
