@@ -7,11 +7,9 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/atlassian/go-sentry-api"
 	"github.com/google/go-jsonnet"
@@ -21,6 +19,7 @@ import (
 	"libs.altipla.consulting/errors"
 
 	"github.com/altipla-consulting/wave/embed"
+	"github.com/altipla-consulting/wave/internal/query"
 )
 
 var (
@@ -68,7 +67,7 @@ var Cmd = &cobra.Command{
 
 		log.WithFields(log.Fields{
 			"filename": args[0],
-			"version":  getVersion(),
+			"version":  query.Version(),
 		}).Info("Deploy generated file")
 
 		apply := exec.Command("kubectl", "apply", "-f", "-")
@@ -101,7 +100,7 @@ func runScript(filename string, content []byte, nativeFuncs []*jsonnet.NativeFun
 		vm.NativeFunction(f)
 	}
 
-	vm.ExtVar("version", getVersion())
+	vm.ExtVar("version", query.Version())
 
 	for _, v := range flagEnv {
 		parts := strings.Split(v, "=")
@@ -198,11 +197,4 @@ func extractItems(list *k8sList, filter []string, v interface{}) {
 	default:
 		panic(fmt.Sprintf("should not reach here: %#v", v))
 	}
-}
-
-func getVersion() string {
-	if ref := os.Getenv("GITHUB_REF"); ref != "" {
-		return path.Base(ref)
-	}
-	return time.Now().Format("20060102") + "." + os.Getenv("BUILD_NUMBER")
 }
