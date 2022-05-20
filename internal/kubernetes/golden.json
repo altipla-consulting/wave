@@ -238,6 +238,59 @@
                     "value": "foo-container"
                   },
                   {
+                    "name": "FOO_ENV",
+                    "value": "foo-value"
+                  }
+                ],
+                "image": "eu.gcr.io/foo:foo-version",
+                "name": "foo-container",
+                "ports": [],
+                "volumeMounts": []
+              }
+            ],
+            "volumes": []
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "foo-deployment"
+      },
+      "spec": {
+        "replicas": 1,
+        "revisionHistoryLimit": 10,
+        "selector": {
+          "matchLabels": {
+            "app": "foo-deployment"
+          }
+        },
+        "strategy": {
+          "rollingUpdate": {
+            "maxUnavailable": 0
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "foo-deployment"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "env": [
+                  {
+                    "name": "VERSION",
+                    "value": "foo-version"
+                  },
+                  {
+                    "name": "K_SERVICE",
+                    "value": "foo-container"
+                  },
+                  {
                     "name": "K8S_POD_IP",
                     "valueFrom": {
                       "fieldRef": {
@@ -618,6 +671,56 @@
           },
           "spec": {
             "containers": [],
+            "volumes": []
+          }
+        },
+        "updateStrategy": {
+          "type": "RollingUpdate"
+        }
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "StatefulSet",
+      "metadata": {
+        "name": "foo-statefulset"
+      },
+      "spec": {
+        "selector": {
+          "matchLabels": {
+            "app": "foo-statefulset"
+          }
+        },
+        "serviceName": "foo-statefulset",
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "foo-statefulset"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "env": [
+                  {
+                    "name": "VERSION",
+                    "value": "foo-version"
+                  },
+                  {
+                    "name": "K_SERVICE",
+                    "value": "foo-container"
+                  },
+                  {
+                    "name": "FOO_ENV",
+                    "value": "foo-value"
+                  }
+                ],
+                "image": "eu.gcr.io/foo:foo-version",
+                "name": "foo-container",
+                "ports": [],
+                "volumeMounts": []
+              }
+            ],
             "volumes": []
           }
         },

@@ -59,6 +59,11 @@ local wave = import 'wave.jsonnet';
           wave.identities.GoogleBind()
         ) +
         wave.identities.Google(name='foo-deployment'),
+      env: wave.objects.Deployment(name='foo-deployment') +
+        wave.spec.DeploymentContainer(
+          wave.objects.Container('foo-container', wave.env.Version('eu.gcr.io/foo')) +
+          wave.env.Custom(name='FOO_ENV', value='foo-value')
+        ),
     },
 
     statefulset: {
@@ -73,6 +78,11 @@ local wave = import 'wave.jsonnet';
             wave.volumes.Mount(name='foo-volume', path='/etc/path'),
         ) +
         wave.volumes.Google(name='foo-volume', disk='foo-disk'),
+      env: wave.objects.StatefulSet(name='foo-statefulset') +
+        wave.spec.StatefulSetContainer(
+          wave.objects.Container('foo-container', wave.env.Version('eu.gcr.io/foo')) +
+          wave.env.Custom(name='FOO_ENV', value='foo-value'),
+        ),
     },
 
     cronjob: {

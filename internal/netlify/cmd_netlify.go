@@ -9,6 +9,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"libs.altipla.consulting/errors"
+
+	"github.com/altipla-consulting/wave/internal/query"
 )
 
 type cmdFlags struct {
@@ -37,7 +39,7 @@ var Cmd = &cobra.Command{
 		if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" {
 			version += ".preview"
 			if flags.Tag == "" {
-				flags.Tag = "preview-" + os.Getenv("GERRIT_CHANGE_NUMBER") + "-" + os.Getenv("GERRIT_PATCHSET_NUMBER")
+				flags.Tag = "preview-" + query.GerritDescriptor()
 			}
 		}
 
