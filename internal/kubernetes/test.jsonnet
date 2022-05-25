@@ -64,6 +64,11 @@ local wave = import 'wave.jsonnet';
           wave.objects.Container('foo-container', wave.env.Version('eu.gcr.io/foo')) +
           wave.env.Custom(name='FOO_ENV', value='foo-value')
         ),
+      replicas: wave.objects.Deployment(name='foo-deployment') +
+        wave.resources.Replicas(3) +
+        wave.spec.DeploymentContainer(
+          wave.objects.Container('foo-container', wave.env.Version('eu.gcr.io/foo'))
+        ),
     },
 
     statefulset: {

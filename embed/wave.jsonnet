@@ -345,6 +345,14 @@
   },
 
   resources: {
+    Replicas: function(replicas) {
+      deployment+: {
+        spec+: {
+          replicas: replicas,
+        },
+      },
+    },
+
     Request: function(memory, cpu='2m') {
       resources+: {
         requests: {cpu: cpu, memory: memory},

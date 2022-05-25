@@ -493,6 +493,55 @@
         "name": "foo-deployment"
       },
       "spec": {
+        "replicas": 3,
+        "revisionHistoryLimit": 10,
+        "selector": {
+          "matchLabels": {
+            "app": "foo-deployment"
+          }
+        },
+        "strategy": {
+          "rollingUpdate": {
+            "maxUnavailable": 0
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "foo-deployment"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "env": [
+                  {
+                    "name": "VERSION",
+                    "value": "foo-version"
+                  },
+                  {
+                    "name": "K_SERVICE",
+                    "value": "foo-container"
+                  }
+                ],
+                "image": "eu.gcr.io/foo:foo-version",
+                "name": "foo-container",
+                "ports": [],
+                "volumeMounts": []
+              }
+            ],
+            "volumes": []
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "foo-deployment"
+      },
+      "spec": {
         "replicas": 1,
         "revisionHistoryLimit": 10,
         "selector": {
