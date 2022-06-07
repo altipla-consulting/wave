@@ -3,12 +3,12 @@ package build
 import (
 	"os"
 	"os/exec"
-	"path"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"libs.altipla.consulting/errors"
+
+	"github.com/altipla-consulting/wave/internal/query"
 )
 
 type cmdFlags struct {
@@ -37,13 +37,7 @@ var Cmd = &cobra.Command{
 			flags.Project = os.Getenv("GOOGLE_PROJECT")
 		}
 
-		version := time.Now().Format("20060102") + "." + os.Getenv("BUILD_NUMBER")
-		if ref := os.Getenv("GITHUB_REF"); ref != "" {
-			version = path.Base(ref)
-		}
-		if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" {
-			version += ".preview"
-		}
+		version := query.Version()
 
 		logger := log.WithFields(log.Fields{
 			"name":    app,
