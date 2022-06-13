@@ -17,6 +17,10 @@ import (
 	"github.com/altipla-consulting/wave/internal/query"
 )
 
+const (
+	MaxDeployAttempts = 1
+)
+
 var (
 	flagProject        string
 	flagMemory         string
@@ -134,17 +138,14 @@ var Cmd = &cobra.Command{
 		log.Debug(strings.Join(append([]string{"gcloud"}, gcloud...), " "))
 
 		var buf bytes.Buffer
-		maxAttempts := 1
-		attempt := 0
-		build := exec.Command("gcloud", gcloud...)
-		build.Stdout = os.Stdout
-		build.Stderr = io.MultiWriter(os.Stderr, &buf)
-		for attempt < maxAttempts {
+		for attempt := 0; attempt < MaxDeployAttempts; attempt++ {
+			buf.Reset()
+			build := exec.Command("gcloud", gcloud...)
+			build.Stdout = os.Stdout
+			build.Stderr = io.MultiWriter(os.Stderr, &buf)
 			if err = build.Run(); err != nil {
 				if strings.Contains(buf.String(), "ABORTED: Conflict for resource") && strings.Contains(buf.String(), "was specified but current version is") {
-					rand.Seed(time.Now().UnixNano())
 					time.Sleep(time.Duration(rand.Intn(15)+1) * time.Second)
-					attempt++
 					continue
 				}
 				return errors.Trace(err)
