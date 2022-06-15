@@ -34,7 +34,6 @@ var Cmd = &cobra.Command{
 	RunE: func(command *cobra.Command, args []string) error {
 		site := args[0]
 
-		version := query.Version()
 		if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" && flags.Tag == "" {
 			flags.Tag = "preview-" + query.GerritDescriptor()
 		}
@@ -56,7 +55,7 @@ var Cmd = &cobra.Command{
 
 		log.WithFields(log.Fields{
 			"name":    site,
-			"version": version,
+			"version": query.Version(),
 		}).Info("Deploy Netlify site")
 
 		netlify := []string{
