@@ -37,11 +37,9 @@ var Cmd = &cobra.Command{
 			flags.Project = os.Getenv("GOOGLE_PROJECT")
 		}
 
-		version := query.Version()
-
 		logger := log.WithFields(log.Fields{
 			"name":    app,
-			"version": version,
+			"version": query.Version(),
 		})
 
 		source := app
@@ -56,7 +54,7 @@ var Cmd = &cobra.Command{
 			"--cache-from", "eu.gcr.io/"+flags.Project+"/"+app+":latest",
 			"-f", source+"/Dockerfile",
 			"-t", "eu.gcr.io/"+flags.Project+"/"+app+":latest",
-			"-t", "eu.gcr.io/"+flags.Project+"/"+app+":"+version,
+			"-t", "eu.gcr.io/"+flags.Project+"/"+app+":"+query.Version(),
 			".",
 		)
 		build.Stdout = os.Stdout
@@ -73,7 +71,7 @@ var Cmd = &cobra.Command{
 			return errors.Trace(err)
 		}
 
-		push = exec.Command("docker", "push", "eu.gcr.io/"+flags.Project+"/"+app+":"+version)
+		push = exec.Command("docker", "push", "eu.gcr.io/"+flags.Project+"/"+app+":"+query.Version())
 		push.Stdout = os.Stdout
 		push.Stderr = os.Stderr
 		if err := push.Run(); err != nil {
