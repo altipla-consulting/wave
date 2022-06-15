@@ -34,7 +34,7 @@ func init() {
 	Cmd.Flags().StringSliceVar(&flagEnvSecret, "env-secret", nil, "Secrets to mount as environment variables.")
 	Cmd.Flags().StringVar(&flagTag, "tag", "", "Name of the revision included in the URL. Defaults to the Gerrit change and patchset.")
 	Cmd.Flags().BoolVar(&flagAlwaysOn, "always-on", false, "App will always have CPU even if it's in the background without requests.")
-	Cmd.Flags().StringVar(&flagRegion, "region", "europe-west1", "Region where resources will be hosted. Default: europe-west1")
+	Cmd.Flags().StringVar(&flagRegion, "region", "europe-west1", "Region where resources will be hosted.")
 	Cmd.MarkPersistentFlagRequired("sentry")
 }
 

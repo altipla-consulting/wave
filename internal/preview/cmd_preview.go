@@ -32,7 +32,7 @@ func init() {
 	Cmd.PersistentFlags().StringVar(&flags.Tag, "tag", "", "Name of the revision included in the URL. Defaults to the Gerrit change and patchset.")
 	Cmd.PersistentFlags().StringSliceVar(&flags.CloudRun, "cloud-run", nil, "Cloud Run applications. Format: `local-name:cloud-run-name`.")
 	Cmd.PersistentFlags().StringSliceVar(&flags.Netlify, "netlify", nil, "Netlify applications. Format: `local-name:netlify-name`.")
-	Cmd.PersistentFlags().StringVar(&flags.Region, "region", "europe-west1", "Region where resources will be hosted. Default: europe-west1")
+	Cmd.PersistentFlags().StringVar(&flags.Region, "region", "europe-west1", "Region where resources will be hosted.")
 }
 
 var Cmd = &cobra.Command{
