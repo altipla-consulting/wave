@@ -4,7 +4,6 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -35,12 +34,8 @@ var Cmd = &cobra.Command{
 	RunE: func(command *cobra.Command, args []string) error {
 		site := args[0]
 
-		version := time.Now().Format("20060102") + "." + os.Getenv("BUILD_NUMBER")
-		if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" {
-			version += ".preview"
-			if flags.Tag == "" {
-				flags.Tag = "preview-" + query.GerritDescriptor()
-			}
+		if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" && flags.Tag == "" {
+			flags.Tag = "preview-" + query.GerritDescriptor()
 		}
 
 		log.Info("Get last commit message")
@@ -60,7 +55,7 @@ var Cmd = &cobra.Command{
 
 		log.WithFields(log.Fields{
 			"name":    site,
-			"version": version,
+			"version": query.Version(),
 		}).Info("Deploy Netlify site")
 
 		netlify := []string{

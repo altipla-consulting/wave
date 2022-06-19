@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -46,12 +45,8 @@ var Cmd = &cobra.Command{
 			return errors.Errorf("pass --cloud-run or --netlify applications as arguments")
 		}
 
-		version := time.Now().Format("20060102") + "." + os.Getenv("BUILD_NUMBER")
-		if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" {
-			version += ".preview"
-			if flags.Tag == "" {
-				flags.Tag = "preview-" + os.Getenv("GERRIT_CHANGE_NUMBER") + "-" + os.Getenv("GERRIT_PATCHSET_NUMBER")
-			}
+		if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" && flags.Tag == "" {
+			flags.Tag = "preview-" + query.GerritDescriptor()
 		}
 
 		var suffix string

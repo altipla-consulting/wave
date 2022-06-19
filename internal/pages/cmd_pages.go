@@ -36,9 +36,8 @@ var Cmd = &cobra.Command{
 	Example: "wave pages",
 	Args:    cobra.NoArgs,
 	RunE: func(command *cobra.Command, args []string) error {
-		version := query.Version()
 		logger := log.WithFields(log.Fields{
-			"version": version,
+			"version": query.Version(),
 		})
 		logger.Info("Build app")
 
