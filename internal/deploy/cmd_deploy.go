@@ -22,6 +22,7 @@ var (
 	flagEnvSecret      []string
 	flagTag            string
 	flagAlwaysOn       bool
+	flagRegion         string
 )
 
 func init() {
@@ -33,6 +34,7 @@ func init() {
 	Cmd.Flags().StringSliceVar(&flagEnvSecret, "env-secret", nil, "Secrets to mount as environment variables.")
 	Cmd.Flags().StringVar(&flagTag, "tag", "", "Name of the revision included in the URL. Defaults to the Gerrit change and patchset.")
 	Cmd.Flags().BoolVar(&flagAlwaysOn, "always-on", false, "App will always have CPU even if it's in the background without requests.")
+	Cmd.Flags().StringVar(&flagRegion, "region", "europe-west1", "Region where resources will be hosted.")
 	Cmd.MarkPersistentFlagRequired("sentry")
 }
 
@@ -87,7 +89,7 @@ var Cmd = &cobra.Command{
 			"beta", "run", "deploy",
 			app,
 			"--image", "eu.gcr.io/" + flagProject + "/" + app + ":" + version,
-			"--region", "europe-west1",
+			"--region", flagRegion,
 			"--platform", "managed",
 			"--concurrency", "50",
 			"--timeout", "60s",
