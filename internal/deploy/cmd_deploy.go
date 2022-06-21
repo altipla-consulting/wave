@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	MaxDeployAttempts = 1
+	MaxDeployAttempts = 2
 )
 
 var (
