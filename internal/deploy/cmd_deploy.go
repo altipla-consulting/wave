@@ -137,9 +137,8 @@ var Cmd = &cobra.Command{
 
 		log.Debug(strings.Join(append([]string{"gcloud"}, gcloud...), " "))
 
-		var buf bytes.Buffer
 		for attempt := 0; attempt < MaxDeployAttempts; attempt++ {
-			buf.Reset()
+			var buf bytes.Buffer
 			build := exec.Command("gcloud", gcloud...)
 			build.Stdout = os.Stdout
 			build.Stderr = io.MultiWriter(os.Stderr, &buf)
