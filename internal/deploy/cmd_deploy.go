@@ -138,9 +138,9 @@ var Cmd = &cobra.Command{
 		log.Debug(strings.Join(append([]string{"gcloud"}, gcloud...), " "))
 
 		for attempt := 0; attempt < MaxDeployAttempts; attempt++ {
-			var buf bytes.Buffer
 			build := exec.Command("gcloud", gcloud...)
 			build.Stdout = os.Stdout
+			var buf bytes.Buffer
 			build.Stderr = io.MultiWriter(os.Stderr, &buf)
 			if err = build.Run(); err != nil {
 				if strings.Contains(buf.String(), "ABORTED: Conflict for resource") && strings.Contains(buf.String(), "was specified but current version is") {
