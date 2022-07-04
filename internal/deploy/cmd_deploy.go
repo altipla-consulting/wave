@@ -1,9 +1,13 @@
 package deploy
 
 import (
+	"bytes"
+	"io"
+	"math/rand"
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/atlassian/go-sentry-api"
 	log "github.com/sirupsen/logrus"
@@ -11,6 +15,10 @@ import (
 	"libs.altipla.consulting/errors"
 
 	"github.com/altipla-consulting/wave/internal/query"
+)
+
+const (
+	maxDeployAttempts = 2
 )
 
 var (
@@ -129,11 +137,20 @@ var Cmd = &cobra.Command{
 
 		log.Debug(strings.Join(append([]string{"gcloud"}, gcloud...), " "))
 
-		build := exec.Command("gcloud", gcloud...)
-		build.Stdout = os.Stdout
-		build.Stderr = os.Stderr
-		if err := build.Run(); err != nil {
-			return errors.Trace(err)
+		for attempt := 0; attempt < maxDeployAttempts; attempt++ {
+			build := exec.Command("gcloud", gcloud...)
+			build.Stdout = os.Stdout
+			var buf bytes.Buffer
+			build.Stderr = io.MultiWriter(os.Stderr, &buf)
+			if err = build.Run(); err != nil {
+				if strings.Contains(buf.String(), "ABORTED: Conflict for resource") && strings.Contains(buf.String(), "was specified but current version is") {
+					log.Warning("Deployment failed because of a concurrent operation. Retrying in a moment.")
+					time.Sleep(time.Duration(rand.Intn(15)+1) * time.Second)
+					continue
+				}
+				return errors.Trace(err)
+			}
+			break
 		}
 
 		if os.Getenv("BUILD_CAUSE") != "SCMTRIGGER" {
