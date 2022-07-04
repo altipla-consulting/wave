@@ -144,6 +144,7 @@ var Cmd = &cobra.Command{
 			build.Stderr = io.MultiWriter(os.Stderr, &buf)
 			if err = build.Run(); err != nil {
 				if strings.Contains(buf.String(), "ABORTED: Conflict for resource") && strings.Contains(buf.String(), "was specified but current version is") {
+					log.Warning("Deployment failed because of a concurrent operation. Retrying in a moment.")
 					time.Sleep(time.Duration(rand.Intn(15)+1) * time.Second)
 					continue
 				}
