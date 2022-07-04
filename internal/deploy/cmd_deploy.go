@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	MaxDeployAttempts = 2
+	maxDeployAttempts = 2
 )
 
 var (
@@ -137,7 +137,7 @@ var Cmd = &cobra.Command{
 
 		log.Debug(strings.Join(append([]string{"gcloud"}, gcloud...), " "))
 
-		for attempt := 0; attempt < MaxDeployAttempts; attempt++ {
+		for attempt := 0; attempt < maxDeployAttempts; attempt++ {
 			build := exec.Command("gcloud", gcloud...)
 			build.Stdout = os.Stdout
 			var buf bytes.Buffer
