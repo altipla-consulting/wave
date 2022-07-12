@@ -1,12 +1,9 @@
 package query
 
 import (
-	"encoding/base64"
 	"os"
 	"path"
 	"time"
-
-	"libs.altipla.consulting/errors"
 )
 
 func Version() string {
@@ -32,28 +29,4 @@ func Version() string {
 	}
 
 	return version
-}
-
-func GerritChangeNumber() string {
-	return os.Getenv("GERRIT_CHANGE_NUMBER")
-}
-
-func GerritPatchSet() string {
-	return os.Getenv("GERRIT_PATCHSET_NUMBER")
-}
-
-func GerritDescriptor() string {
-	if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" {
-		return GerritChangeNumber() + "-" + GerritPatchSet()
-	}
-	return "master"
-}
-
-func GerritCommitHash() string {
-	return os.Getenv("GERRIT_PATCHSET_REVISION")
-}
-
-func GerritCommitMessage() (string, error) {
-	msg, err := base64.StdEncoding.DecodeString(os.Getenv("GERRIT_CHANGE_COMMIT_MESSAGE"))
-	return string(msg), errors.Trace(err)
 }

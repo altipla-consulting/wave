@@ -1,7 +1,6 @@
 package preview
 
 import (
-	"fmt"
 	"net/url"
 	"os"
 	"os/exec"
@@ -11,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"libs.altipla.consulting/errors"
 
-	"github.com/altipla-consulting/wave/internal/query"
+	"github.com/altipla-consulting/wave/internal/gerrit"
 )
 
 type cmdFlags struct {
@@ -99,38 +98,12 @@ var Cmd = &cobra.Command{
 			log.Println(preview)
 		}
 
-		gerrit := readGerritInfo()
-		ssh := []string{
-			"ssh",
-			"-p", gerrit.Port,
-			fmt.Sprintf("%s@%s", gerrit.BotUsername, gerrit.Host),
-			"gerrit", "review", fmt.Sprintf("%v,%v", query.GerritChangeNumber(), query.GerritPatchSet()),
-			"--message", `"Previews deployed at:` + "\n" + strings.Join(previews, "\n") + `"`,
-		}
-		log.Debug(strings.Join(ssh, " "))
-		comment := exec.Command(ssh[0], ssh[1:]...)
-		comment.Stdout = os.Stdout
-		comment.Stderr = os.Stderr
-		if err := comment.Run(); err != nil {
+		if err := gerrit.Comment("Previews deployed at:\n" + strings.Join(previews, "\n")); err != nil {
 			return errors.Trace(err)
 		}
 
 		return nil
 	},
-}
-
-type gerritInfo struct {
-	BotUsername string
-	Host        string
-	Port        string
-}
-
-func readGerritInfo() gerritInfo {
-	return gerritInfo{
-		BotUsername: os.Getenv("GERRIT_BOT_USERNAME"),
-		Host:        os.Getenv("GERRIT_HOST"),
-		Port:        os.Getenv("GERRIT_PORT"),
-	}
 }
 
 func splitName(name string) (string, string, error) {

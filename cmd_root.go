@@ -9,6 +9,7 @@ import (
 	"github.com/altipla-consulting/wave/internal/deploy"
 	"github.com/altipla-consulting/wave/internal/kubernetes"
 	"github.com/altipla-consulting/wave/internal/netlify"
+	"github.com/altipla-consulting/wave/internal/pages"
 	"github.com/altipla-consulting/wave/internal/preview"
 )
 
@@ -21,6 +22,7 @@ func init() {
 	cmdRoot.AddCommand(deploy.Cmd)
 	cmdRoot.AddCommand(kubernetes.Cmd)
 	cmdRoot.AddCommand(netlify.Cmd)
+	cmdRoot.AddCommand(pages.Cmd)
 	cmdRoot.AddCommand(preview.Cmd)
 }
 

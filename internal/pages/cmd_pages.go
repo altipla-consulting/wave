@@ -1,4 +1,4 @@
-package ar
+package pages
 
 import (
 	"bytes"
@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 	"libs.altipla.consulting/errors"
 
-	"github.com/altipla-consulting/wave/internal/query"
+	"github.com/altipla-consulting/wave/internal/gerrit"
 )
 
 var (
@@ -37,23 +37,16 @@ var Cmd = &cobra.Command{
 	Args:    cobra.NoArgs,
 	RunE: func(command *cobra.Command, args []string) error {
 		logger := log.WithFields(log.Fields{
-			"version": query.Version(),
+			"branch": gerrit.Descriptor(),
 		})
 		logger.Info("Build app")
-
-		msg, err := query.GerritCommitMessage()
-		if err != nil {
-			return errors.Trace(err)
-		}
 
 		logger.Info("Publish to Cloudflare Pages")
 		wrangler := []string{
 			"wrangler",
 			"pages", "publish",
 			"--project-name", flagProject,
-			"--branch", query.GerritDescriptor(),
-			"--commit-hash", query.GerritCommitHash(),
-			"--commit-message", msg,
+			"--branch", gerrit.Descriptor(),
 			flagSource,
 		}
 		log.Debug(strings.Join(wrangler, " "))
@@ -76,7 +69,9 @@ var Cmd = &cobra.Command{
 			return errors.Errorf("cannot find preview URL in wrangler output")
 		}
 
-		log.Println(result)
+		if err := gerrit.Comment(fmt.Sprintf("Preview %s: %s", flagProject, result)); err != nil {
+			return errors.Trace(err)
+		}
 
 		return nil
 	},
