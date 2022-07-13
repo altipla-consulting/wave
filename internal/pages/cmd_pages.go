@@ -49,6 +49,8 @@ var Cmd = &cobra.Command{
 		}
 		if gerrit.IsPreview() {
 			wrangler = append(wrangler, "--branch", gerrit.Descriptor())
+		} else {
+			wrangler = append(wrangler, "--branch", "main")
 		}
 		wrangler = append(wrangler, flagSource)
 		log.Debug(strings.Join(wrangler, " "))
