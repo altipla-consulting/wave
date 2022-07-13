@@ -21,7 +21,7 @@ func PatchSet() string {
 }
 
 func Descriptor() string {
-	if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" {
+	if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" && os.Getenv("GERRIT_EVENT_TYPE") != "ref-updated" {
 		return "preview-" + ChangeNumber() + "-" + PatchSet()
 	}
 	return "master"

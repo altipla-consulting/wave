@@ -69,8 +69,10 @@ var Cmd = &cobra.Command{
 			return errors.Errorf("cannot find preview URL in wrangler output")
 		}
 
-		if err := gerrit.Comment(fmt.Sprintf("Preview %s: %s", flagProject, result)); err != nil {
-			return errors.Trace(err)
+		if !gerrit.IsPreview() {
+			if err := gerrit.Comment(fmt.Sprintf("Preview %s: %s", flagProject, result)); err != nil {
+				return errors.Trace(err)
+			}
 		}
 
 		return nil
