@@ -46,9 +46,11 @@ var Cmd = &cobra.Command{
 			"wrangler",
 			"pages", "publish",
 			"--project-name", flagProject,
-			"--branch", gerrit.Descriptor(),
-			flagSource,
 		}
+		if gerrit.IsPreview() {
+			wrangler = append(wrangler, "--branch", gerrit.Descriptor())
+		}
+		wrangler = append(wrangler, flagSource)
 		log.Debug(strings.Join(wrangler, " "))
 		publish := exec.Command(wrangler[0], wrangler[1:]...)
 		var buf bytes.Buffer
