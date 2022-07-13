@@ -47,7 +47,7 @@ var Cmd = &cobra.Command{
 		}
 
 		if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" && flags.Tag == "" {
-			flags.Tag = "preview-" + query.GerritDescriptor()
+			flags.Tag = gerrit.Descriptor()
 		}
 
 		var suffix string
