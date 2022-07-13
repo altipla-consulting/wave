@@ -62,16 +62,15 @@ var Cmd = &cobra.Command{
 			return errors.Trace(err)
 		}
 
-		match, err := regexp.Compile("https://[^.]+\\." + flagProject + "\\.pages\\.dev")
-		if err != nil {
-			return errors.Trace(err)
-		}
-		result := match.FindString(buf.String())
-		if result == "" {
-			return errors.Errorf("cannot find preview URL in wrangler output")
-		}
-
-		if !gerrit.IsPreview() {
+		if gerrit.IsPreview() {
+			match, err := regexp.Compile("https://[^.]+\\." + flagProject + "\\.pages\\.dev")
+			if err != nil {
+				return errors.Trace(err)
+			}
+			result := match.FindString(buf.String())
+			if result == "" {
+				return errors.Errorf("cannot find preview URL in wrangler output")
+			}
 			if err := gerrit.Comment(fmt.Sprintf("Preview %s: %s", flagProject, result)); err != nil {
 				return errors.Trace(err)
 			}
