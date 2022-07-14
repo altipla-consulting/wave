@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"strconv"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -58,7 +57,7 @@ func Comment(msg string) error {
 		"-p", Port(),
 		fmt.Sprintf("%s@%s", BotUsername(), Host()),
 		"gerrit", "review", fmt.Sprintf("%v,%v", ChangeNumber(), PatchSet()),
-		"--message", strconv.Quote(msg),
+		"--message", `"` + msg + `"`,
 	}
 	log.Debug(strings.Join(ssh, " "))
 	comment := exec.Command(ssh[0], ssh[1:]...)
