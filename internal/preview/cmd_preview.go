@@ -40,8 +40,8 @@ var Cmd = &cobra.Command{
 			flagProject = os.Getenv("GOOGLE_PROJECT")
 		}
 
-		if len(flagCloudRun) == 0 && len(flagNetlify) == 0 {
-			return errors.Errorf("pass --cloud-run or --netlify applications as arguments")
+		if len(flagCloudRun) == 0 && len(flagNetlify) == 0 && len(flagCloudflare) == 0 {
+			return errors.Errorf("pass --cloud-run, --netlify or --cloudflare applications as arguments")
 		}
 
 		if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" && flagTag == "" {
