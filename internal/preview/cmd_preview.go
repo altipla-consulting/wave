@@ -95,7 +95,7 @@ var Cmd = &cobra.Command{
 			if err != nil {
 				return errors.Trace(err)
 			}
-			previews = append(previews, local+" :: https://"+flagTag+"--"+remote+".pages.dev/")
+			previews = append(previews, local+" :: https://"+flagTag+"."+remote+".pages.dev/")
 		}
 
 		log.Info("Send preview URLs as a Gerrit comment")
