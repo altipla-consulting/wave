@@ -5,11 +5,12 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/altipla-consulting/wave/internal/gerrit"
-	"github.com/altipla-consulting/wave/internal/query"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"libs.altipla.consulting/errors"
+
+	"github.com/altipla-consulting/wave/internal/gerrit"
+	"github.com/altipla-consulting/wave/internal/query"
 )
 
 type cmdFlags struct {

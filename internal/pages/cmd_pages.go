@@ -1,12 +1,9 @@
 package pages
 
 import (
-	"bytes"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
-	"regexp"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -55,27 +52,12 @@ var Cmd = &cobra.Command{
 		wrangler = append(wrangler, flagSource)
 		log.Debug(strings.Join(wrangler, " "))
 		publish := exec.Command(wrangler[0], wrangler[1:]...)
-		var buf bytes.Buffer
-		publish.Stdout = io.MultiWriter(os.Stdout, &buf)
+		publish.Stdout = os.Stdout
 		publish.Stderr = os.Stderr
 		publish.Env = os.Environ()
 		publish.Env = append(publish.Env, fmt.Sprintf("CLOUDFLARE_ACCOUNT_ID=%s", flagAccount))
 		if err := publish.Run(); err != nil {
 			return errors.Trace(err)
-		}
-
-		if gerrit.IsPreview() {
-			match, err := regexp.Compile("https://[^.]+\\." + flagProject + "\\.pages\\.dev")
-			if err != nil {
-				return errors.Trace(err)
-			}
-			result := match.FindString(buf.String())
-			if result == "" {
-				return errors.Errorf("cannot find preview URL in wrangler output")
-			}
-			if err := gerrit.Comment(fmt.Sprintf("Preview %s: %s", flagProject, result)); err != nil {
-				return errors.Trace(err)
-			}
 		}
 
 		return nil
