@@ -6,6 +6,7 @@ import (
 
 	"github.com/altipla-consulting/wave/internal/commands/ar"
 	"github.com/altipla-consulting/wave/internal/commands/build"
+	"github.com/altipla-consulting/wave/internal/commands/compose"
 	"github.com/altipla-consulting/wave/internal/commands/deploy"
 	"github.com/altipla-consulting/wave/internal/commands/kubernetes"
 	"github.com/altipla-consulting/wave/internal/commands/netlify"
@@ -19,6 +20,7 @@ func init() {
 	cmdRoot.PersistentFlags().BoolVarP(&flagDebug, "debug", "d", false, "Enable debug logging for this tool.")
 	cmdRoot.AddCommand(ar.Cmd)
 	cmdRoot.AddCommand(build.Cmd)
+	cmdRoot.AddCommand(compose.Cmd)
 	cmdRoot.AddCommand(deploy.Cmd)
 	cmdRoot.AddCommand(kubernetes.Cmd)
 	cmdRoot.AddCommand(netlify.Cmd)
