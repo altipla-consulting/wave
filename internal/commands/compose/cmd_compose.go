@@ -47,7 +47,7 @@ var Cmd = &cobra.Command{
 			}
 		}
 
-		compose := exec.Command("docker-compose", "-f", "docker-compose.prod.yml", "up", "-d")
+		compose := exec.Command("docker", "compose", "-f", "docker-compose.prod.yml", "up", "-d")
 		compose.Stderr = os.Stderr
 		compose.Stdout = os.Stdout
 		compose.Env = os.Environ()
