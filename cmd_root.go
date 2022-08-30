@@ -4,13 +4,13 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/altipla-consulting/wave/internal/ar"
-	"github.com/altipla-consulting/wave/internal/build"
-	"github.com/altipla-consulting/wave/internal/deploy"
-	"github.com/altipla-consulting/wave/internal/kubernetes"
-	"github.com/altipla-consulting/wave/internal/netlify"
-	"github.com/altipla-consulting/wave/internal/pages"
-	"github.com/altipla-consulting/wave/internal/preview"
+	"github.com/altipla-consulting/wave/internal/commands/ar"
+	"github.com/altipla-consulting/wave/internal/commands/build"
+	"github.com/altipla-consulting/wave/internal/commands/deploy"
+	"github.com/altipla-consulting/wave/internal/commands/kubernetes"
+	"github.com/altipla-consulting/wave/internal/commands/netlify"
+	"github.com/altipla-consulting/wave/internal/commands/pages"
+	"github.com/altipla-consulting/wave/internal/commands/preview"
 )
 
 var flagDebug bool
