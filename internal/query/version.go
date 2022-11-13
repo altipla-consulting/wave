@@ -44,5 +44,5 @@ func VersionHostname(override string) string {
 }
 
 func IsRelease() bool {
-	return os.Getenv("GITHUB_REF") != "" || !gerrit.IsPreview()
+	return os.Getenv("GITHUB_REF_TYPE") == "tag" || !gerrit.IsPreview()
 }
