@@ -32,6 +32,7 @@ var (
 	flagTag            string
 	flagAlwaysOn       bool
 	flagRegion         string
+	flagCloudSQL       []string
 )
 
 func init() {
@@ -45,6 +46,7 @@ func init() {
 	Cmd.Flags().StringVar(&flagTag, "tag", "", "Name of the revision included in the URL. Defaults to the Gerrit change and patchset.")
 	Cmd.Flags().BoolVar(&flagAlwaysOn, "always-on", false, "App will always have CPU even if it's in the background without requests.")
 	Cmd.Flags().StringVar(&flagRegion, "region", "europe-west1", "Region where resources will be hosted.")
+	Cmd.Flags().StringSliceVar(&flagCloudSQL, "cloudsql", nil, "CloudSQL instances to connect to. Format: project:region:instance-id.")
 	Cmd.MarkPersistentFlagRequired("sentry")
 }
 
@@ -137,6 +139,9 @@ var Cmd = &cobra.Command{
 			gcloud = append(gcloud, "--no-cpu-throttling")
 		} else {
 			gcloud = append(gcloud, "--cpu-throttling")
+		}
+		if len(flagCloudSQL) > 0 {
+			gcloud = append(gcloud, "--set-cloudsql-instances", strings.Join(flagCloudSQL, ","))
 		}
 
 		log.Debug(strings.Join(append([]string{"gcloud"}, gcloud...), " "))
