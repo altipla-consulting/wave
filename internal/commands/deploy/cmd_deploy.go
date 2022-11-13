@@ -67,9 +67,6 @@ var Cmd = &cobra.Command{
 				flagMemory = "256Mi"
 			}
 		}
-		if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" && flagTag == "" {
-			flagTag = "preview-" + os.Getenv("GERRIT_CHANGE_NUMBER") + "-" + os.Getenv("GERRIT_PATCHSET_NUMBER")
-		}
 
 		client, err := sentry.NewClient(os.Getenv("SENTRY_AUTH_TOKEN"), nil, nil)
 		if err != nil {
@@ -120,12 +117,12 @@ var Cmd = &cobra.Command{
 			}
 			gcloud = append(gcloud, "--set-secrets", strings.Join(secrets, ","))
 		}
-		if flagTag != "" {
-			if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" {
+		if tag := query.VersionHostname(flagTag); tag != "" {
+			if !query.IsRelease() {
 				gcloud = append(gcloud, "--no-traffic")
 				gcloud = append(gcloud, "--max-instances", "1")
 			}
-			gcloud = append(gcloud, "--tag", flagTag)
+			gcloud = append(gcloud, "--tag", tag)
 		} else {
 			gcloud = append(gcloud, "--max-instances", "20")
 		}
@@ -153,11 +150,11 @@ var Cmd = &cobra.Command{
 			break
 		}
 
-		if os.Getenv("BUILD_CAUSE") != "SCMTRIGGER" {
+		if query.IsRelease() {
 			log.WithFields(log.Fields{
 				"name":    app,
 				"version": version,
-			}).Info("Enable traffic to latest version of the app")
+			}).Info("Enable traffic to the latest version of the app")
 
 			traffic := exec.Command(
 				"gcloud",
