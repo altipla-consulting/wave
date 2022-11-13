@@ -28,6 +28,7 @@ var (
 	flagSentry         string
 	flagVolumeSecret   []string
 	flagEnvSecret      []string
+	flagEnv            []string
 	flagTag            string
 	flagAlwaysOn       bool
 	flagRegion         string
@@ -40,6 +41,7 @@ func init() {
 	Cmd.Flags().StringVar(&flagSentry, "sentry", "", "Name of the sentry project to configure.")
 	Cmd.Flags().StringSliceVar(&flagVolumeSecret, "volume-secret", nil, "Secrets to mount as volumes.")
 	Cmd.Flags().StringSliceVar(&flagEnvSecret, "env-secret", nil, "Secrets to mount as environment variables.")
+	Cmd.Flags().StringSliceVar(&flagEnv, "env", nil, "Custom environment variables to define as `KEY=value` pairs.")
 	Cmd.Flags().StringVar(&flagTag, "tag", "", "Name of the revision included in the URL. Defaults to the Gerrit change and patchset.")
 	Cmd.Flags().BoolVar(&flagAlwaysOn, "always-on", false, "App will always have CPU even if it's in the background without requests.")
 	Cmd.Flags().StringVar(&flagRegion, "region", "europe-west1", "Region where resources will be hosted.")
@@ -90,6 +92,11 @@ var Cmd = &cobra.Command{
 			"service-account": flagServiceAccount,
 		}).Info("Deploy app")
 
+		env := []string{
+			"SENTRY_DSN=" + keys[0].DSN.Public,
+		}
+		env = append(env, flagEnv...)
+
 		gcloud := []string{
 			"beta", "run", "deploy",
 			app,
@@ -100,7 +107,7 @@ var Cmd = &cobra.Command{
 			"--timeout", "60s",
 			"--service-account", flagServiceAccount + "@" + flagProject + ".iam.gserviceaccount.com",
 			"--memory", flagMemory,
-			"--set-env-vars", "SENTRY_DSN=" + keys[0].DSN.Public,
+			"--set-env-vars", strings.Join(env, ","),
 			"--labels", "app=" + app,
 		}
 		if len(flagVolumeSecret) > 0 || len(flagEnvSecret) > 0 {
