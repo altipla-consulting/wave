@@ -2,6 +2,7 @@ package deploy
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"math/rand"
 	"os"
@@ -28,9 +29,11 @@ var (
 	flagSentry         string
 	flagVolumeSecret   []string
 	flagEnvSecret      []string
+	flagEnv            []string
 	flagTag            string
 	flagAlwaysOn       bool
 	flagRegion         string
+	flagCloudSQL       []string
 )
 
 func init() {
@@ -40,9 +43,11 @@ func init() {
 	Cmd.Flags().StringVar(&flagSentry, "sentry", "", "Name of the sentry project to configure.")
 	Cmd.Flags().StringSliceVar(&flagVolumeSecret, "volume-secret", nil, "Secrets to mount as volumes.")
 	Cmd.Flags().StringSliceVar(&flagEnvSecret, "env-secret", nil, "Secrets to mount as environment variables.")
+	Cmd.Flags().StringSliceVar(&flagEnv, "env", nil, "Custom environment variables to define as `KEY=value` pairs.")
 	Cmd.Flags().StringVar(&flagTag, "tag", "", "Name of the revision included in the URL. Defaults to the Gerrit change and patchset.")
 	Cmd.Flags().BoolVar(&flagAlwaysOn, "always-on", false, "App will always have CPU even if it's in the background without requests.")
 	Cmd.Flags().StringVar(&flagRegion, "region", "europe-west1", "Region where resources will be hosted.")
+	Cmd.Flags().StringSliceVar(&flagCloudSQL, "cloudsql", nil, "CloudSQL instances to connect to. Only the name.")
 	Cmd.MarkPersistentFlagRequired("sentry")
 }
 
@@ -67,9 +72,6 @@ var Cmd = &cobra.Command{
 				flagMemory = "256Mi"
 			}
 		}
-		if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" && flagTag == "" {
-			flagTag = "preview-" + os.Getenv("GERRIT_CHANGE_NUMBER") + "-" + os.Getenv("GERRIT_PATCHSET_NUMBER")
-		}
 
 		client, err := sentry.NewClient(os.Getenv("SENTRY_AUTH_TOKEN"), nil, nil)
 		if err != nil {
@@ -93,6 +95,11 @@ var Cmd = &cobra.Command{
 			"service-account": flagServiceAccount,
 		}).Info("Deploy app")
 
+		env := []string{
+			"SENTRY_DSN=" + keys[0].DSN.Public,
+		}
+		env = append(env, flagEnv...)
+
 		gcloud := []string{
 			"beta", "run", "deploy",
 			app,
@@ -103,7 +110,7 @@ var Cmd = &cobra.Command{
 			"--timeout", "60s",
 			"--service-account", flagServiceAccount + "@" + flagProject + ".iam.gserviceaccount.com",
 			"--memory", flagMemory,
-			"--set-env-vars", "SENTRY_DSN=" + keys[0].DSN.Public,
+			"--set-env-vars", strings.Join(env, ","),
 			"--labels", "app=" + app,
 		}
 		if len(flagVolumeSecret) > 0 || len(flagEnvSecret) > 0 {
@@ -120,12 +127,12 @@ var Cmd = &cobra.Command{
 			}
 			gcloud = append(gcloud, "--set-secrets", strings.Join(secrets, ","))
 		}
-		if flagTag != "" {
-			if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" {
+		if tag := query.VersionHostname(flagTag); tag != "" {
+			if !query.IsRelease() {
 				gcloud = append(gcloud, "--no-traffic")
 				gcloud = append(gcloud, "--max-instances", "1")
 			}
-			gcloud = append(gcloud, "--tag", flagTag)
+			gcloud = append(gcloud, "--tag", tag)
 		} else {
 			gcloud = append(gcloud, "--max-instances", "20")
 		}
@@ -133,6 +140,13 @@ var Cmd = &cobra.Command{
 			gcloud = append(gcloud, "--no-cpu-throttling")
 		} else {
 			gcloud = append(gcloud, "--cpu-throttling")
+		}
+		if len(flagCloudSQL) > 0 {
+			var instances []string
+			for _, instance := range flagCloudSQL {
+				instances = append(instances, fmt.Sprintf("%s:%s:%s", flagProject, flagRegion, instance))
+			}
+			gcloud = append(gcloud, "--set-cloudsql-instances", strings.Join(instances, ","))
 		}
 
 		log.Debug(strings.Join(append([]string{"gcloud"}, gcloud...), " "))
@@ -153,11 +167,11 @@ var Cmd = &cobra.Command{
 			break
 		}
 
-		if os.Getenv("BUILD_CAUSE") != "SCMTRIGGER" {
+		if query.IsRelease() {
 			log.WithFields(log.Fields{
 				"name":    app,
 				"version": version,
-			}).Info("Enable traffic to latest version of the app")
+			}).Info("Enable traffic to the latest version of the app")
 
 			traffic := exec.Command(
 				"gcloud",

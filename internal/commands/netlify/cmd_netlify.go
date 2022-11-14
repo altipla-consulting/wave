@@ -9,7 +9,6 @@ import (
 	"github.com/spf13/cobra"
 	"libs.altipla.consulting/errors"
 
-	"github.com/altipla-consulting/wave/internal/gerrit"
 	"github.com/altipla-consulting/wave/internal/query"
 )
 
@@ -34,10 +33,6 @@ var Cmd = &cobra.Command{
 	Args:    cobra.ExactArgs(1),
 	RunE: func(command *cobra.Command, args []string) error {
 		site := args[0]
-
-		if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" && flags.Tag == "" {
-			flags.Tag = gerrit.Descriptor()
-		}
 
 		log.Info("Get last commit message")
 		cmd := exec.Command("git", "log", "-1", "--pretty=%B")
@@ -66,10 +61,10 @@ var Cmd = &cobra.Command{
 			"--json",
 			"--message", lastCommit,
 		}
-		if flags.Tag != "" {
-			netlify = append(netlify, "--alias", flags.Tag)
+		if tag := query.VersionHostname(flags.Tag); tag != "" {
+			netlify = append(netlify, "--alias", tag)
 		}
-		if os.Getenv("BUILD_CAUSE") != "SCMTRIGGER" {
+		if query.IsRelease() {
 			netlify = append(netlify, "--prod")
 		}
 		log.Debug(strings.Join(netlify, " "))

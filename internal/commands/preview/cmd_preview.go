@@ -11,6 +11,7 @@ import (
 	"libs.altipla.consulting/errors"
 
 	"github.com/altipla-consulting/wave/internal/gerrit"
+	"github.com/altipla-consulting/wave/internal/query"
 )
 
 var (
@@ -45,10 +46,6 @@ var Cmd = &cobra.Command{
 			return errors.Errorf("pass --cloud-run, --netlify or --cloudflare applications as arguments")
 		}
 
-		if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" && flagTag == "" {
-			flagTag = gerrit.Descriptor()
-		}
-
 		var runSuffix string
 		if len(flagCloudRun) > 0 {
 			_, remote, err := splitName(flagCloudRun[0])
@@ -77,26 +74,27 @@ var Cmd = &cobra.Command{
 		}
 
 		var previews []string
+		host := query.VersionHostname(flagTag)
 		for _, cr := range flagCloudRun {
 			local, remote, err := splitName(cr)
 			if err != nil {
 				return errors.Trace(err)
 			}
-			previews = append(previews, local+" :: https://"+flagTag+"---"+remote+"-"+runSuffix+"-ew.a.run.app/")
+			previews = append(previews, local+" :: https://"+host+"---"+remote+"-"+runSuffix+"-ew.a.run.app/")
 		}
 		for _, netlify := range flagNetlify {
 			local, remote, err := splitName(netlify)
 			if err != nil {
 				return errors.Trace(err)
 			}
-			previews = append(previews, local+" :: https://"+flagTag+"--"+remote+".netlify.app/")
+			previews = append(previews, local+" :: https://"+host+"--"+remote+".netlify.app/")
 		}
 		for _, cf := range flagCloudflare {
 			local, remote, err := splitName(cf)
 			if err != nil {
 				return errors.Trace(err)
 			}
-			previews = append(previews, local+" :: https://"+flagTag+"."+remote+".pages.dev/")
+			previews = append(previews, local+" :: https://"+host+"."+remote+".pages.dev/")
 		}
 
 		log.Info("Send preview URLs as a Gerrit comment")

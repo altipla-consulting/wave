@@ -4,6 +4,8 @@ import (
 	"os"
 	"path"
 	"time"
+
+	"github.com/altipla-consulting/wave/internal/gerrit"
 )
 
 func Version() string {
@@ -29,4 +31,21 @@ func Version() string {
 	}
 
 	return version
+}
+
+func VersionHostname(override string) string {
+	if override != "" {
+		return override
+	}
+	if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" {
+		return gerrit.Descriptor()
+	}
+	return ""
+}
+
+func IsRelease() bool {
+	if os.Getenv("GERRIT_HOST") != "" {
+		return !gerrit.IsPreview()
+	}
+	return os.Getenv("GITHUB_REF_TYPE") == "tag"
 }
