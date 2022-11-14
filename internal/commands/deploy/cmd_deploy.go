@@ -143,7 +143,7 @@ var Cmd = &cobra.Command{
 			var buf bytes.Buffer
 			build.Stderr = io.MultiWriter(os.Stderr, &buf)
 			if err = build.Run(); err != nil {
-				if Retrigger(buf.String()) {
+				if shouldRetry(buf.String()) {
 					log.Warning("Deployment failed because of a concurrent operation. Retrying in a moment.")
 					time.Sleep(time.Duration(rand.Intn(15)+1) * time.Second)
 					continue
@@ -182,10 +182,11 @@ func apiString(s string) *string {
 	return &s
 }
 
-func Retrigger(s string) bool {
+func shouldRetry(s string) bool {
 	if strings.Contains(s, "ABORTED: Conflict for resource") && strings.Contains(s, "was specified but current version is") {
 		return true
-	} else if strings.Contains(s, "Resource readiness deadline exceeded") {
+	}
+	if strings.Contains(s, "Resource readiness deadline exceeded") {
 		return true
 	}
 
