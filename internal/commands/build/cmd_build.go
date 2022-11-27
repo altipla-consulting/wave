@@ -11,14 +11,18 @@ import (
 	"github.com/altipla-consulting/wave/internal/query"
 )
 
+type cmdFlags struct {
+	Project string
+	Source  string
+}
+
 var (
-	flagProject, flagSource, flagRepo string
+	flags cmdFlags
 )
 
 func init() {
-	Cmd.PersistentFlags().StringVar(&flagProject, "project", "", "Google Cloud project where the container will be stored. Defaults to the GOOGLE_PROJECT environment variable.")
-	Cmd.PersistentFlags().StringVar(&flagSource, "source", "", "Source folder. Defaults to a folder with the name of the app.")
-	Cmd.PersistentFlags().StringVar(&flagRepo, "repo", "eu.gcr.io", "Docker repository. Defaults to Container Registry.")
+	Cmd.PersistentFlags().StringVar(&flags.Project, "project", "", "Google Cloud project where the container will be stored. Defaults to the GOOGLE_PROJECT environment variable.")
+	Cmd.PersistentFlags().StringVar(&flags.Source, "source", "", "Source folder. Defaults to a folder with the name of the app.")
 }
 
 var Cmd = &cobra.Command{
@@ -29,8 +33,8 @@ var Cmd = &cobra.Command{
 	RunE: func(command *cobra.Command, args []string) error {
 		app := args[0]
 
-		if flagProject == "" {
-			flagProject = os.Getenv("GOOGLE_PROJECT")
+		if flags.Project == "" {
+			flags.Project = os.Getenv("GOOGLE_PROJECT")
 		}
 
 		logger := log.WithFields(log.Fields{
@@ -39,18 +43,18 @@ var Cmd = &cobra.Command{
 		})
 
 		source := app
-		if flagSource != "" {
-			source = flagSource
+		if flags.Source != "" {
+			source = flags.Source
 		}
 
 		logger.Info("Build app")
 		build := exec.Command(
 			"docker",
 			"build",
-			"--cache-from", image(app, "latest"),
+			"--cache-from", "eu.gcr.io/"+flags.Project+"/"+app+":latest",
 			"-f", source+"/Dockerfile",
-			"-t", image(app, query.Version()),
-			"-t", image(app, "latest"),
+			"-t", "eu.gcr.io/"+flags.Project+"/"+app+":latest",
+			"-t", "eu.gcr.io/"+flags.Project+"/"+app+":"+query.Version(),
 			".",
 		)
 		build.Stdout = os.Stdout
@@ -60,14 +64,14 @@ var Cmd = &cobra.Command{
 		}
 
 		logger.Info("Push to Container Registry")
-		push := exec.Command("docker", "push", image(app, query.Version()))
+		push := exec.Command("docker", "push", "eu.gcr.io/"+flags.Project+"/"+app+":latest")
 		push.Stdout = os.Stdout
 		push.Stderr = os.Stderr
 		if err := push.Run(); err != nil {
 			return errors.Trace(err)
 		}
 
-		push = exec.Command("docker", "push", image(app, "latest"))
+		push = exec.Command("docker", "push", "eu.gcr.io/"+flags.Project+"/"+app+":"+query.Version())
 		push.Stdout = os.Stdout
 		push.Stderr = os.Stderr
 		if err := push.Run(); err != nil {
@@ -76,8 +80,4 @@ var Cmd = &cobra.Command{
 
 		return nil
 	},
-}
-
-func image(app, version string) string {
-	return flagRepo + "/" + flagProject + "/" + app + ":" + version
 }
