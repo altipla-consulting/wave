@@ -5,12 +5,22 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/atlassian/go-sentry-api"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"libs.altipla.consulting/errors"
 
 	"github.com/altipla-consulting/wave/internal/query"
 )
+
+var (
+	flagSentry string
+)
+
+func init() {
+	Cmd.Flags().StringVar(&flagSentry, "sentry", "", "Name of the sentry project to configure.")
+	Cmd.MarkPersistentFlagRequired("sentry")
+}
 
 var Cmd = &cobra.Command{
 	Use:     "compose",
@@ -21,6 +31,19 @@ var Cmd = &cobra.Command{
 		logger := log.WithField("machine", args[0])
 
 		logger.WithField("version", query.Version()).Info("Deploy to remote machine with Docker Compose")
+
+		client, err := sentry.NewClient(os.Getenv("SENTRY_AUTH_TOKEN"), nil, nil)
+		if err != nil {
+			return errors.Trace(err)
+		}
+
+		org := sentry.Organization{
+			Slug: apiString("altipla-consulting"),
+		}
+		keys, err := client.GetClientKeys(org, sentry.Project{Slug: apiString(flagSentry)})
+		if err != nil {
+			return errors.Trace(err)
+		}
 
 		keygen := exec.Command("ssh-keygen", "-F", args[0])
 		keygen.Stderr = os.Stderr
@@ -53,10 +76,15 @@ var Cmd = &cobra.Command{
 		compose.Env = os.Environ()
 		compose.Env = append(compose.Env, "DOCKER_HOST=ssh://jenkins@"+args[0])
 		compose.Env = append(compose.Env, "VERSION="+query.Version())
+		compose.Env = append(compose.Env, "SENTRY_DSN="+keys[0].DSN.Public)
 		if err := compose.Run(); err != nil {
 			return errors.Trace(err)
 		}
 
 		return nil
 	},
+}
+
+func apiString(s string) *string {
+	return &s
 }
