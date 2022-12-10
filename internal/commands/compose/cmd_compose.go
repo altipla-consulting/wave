@@ -52,24 +52,35 @@ var Cmd = &cobra.Command{
 				return errors.Trace(err)
 			}
 
-			logger.Info("Downloading SSH key from the remote machine")
-			home, err := os.UserHomeDir()
-			if err != nil {
-				return errors.Trace(err)
-			}
-			f, err := os.OpenFile(filepath.Join(home, ".ssh", "known_hosts"), os.O_APPEND|os.O_WRONLY, 0600)
-			if err != nil {
-				return errors.Trace(err)
-			}
-			defer f.Close()
-			keyscan := exec.Command("ssh-keyscan", args[0])
-			keyscan.Stdout = f
-			keyscan.Stderr = os.Stderr
-			if err := keyscan.Run(); err != nil {
+			// Error is expected, the host is not in the known hosts.
+		} else {
+			// Remove the stored host, could be outdated.
+			logger.Info("Removing old stored host authentication")
+			rm := exec.Command("ssh-keygen", "-R", args[0])
+			rm.Stderr = os.Stderr
+			if err := rm.Run(); err != nil {
 				return errors.Trace(err)
 			}
 		}
 
+		logger.Info("Downloading SSH key from the remote machine")
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return errors.Trace(err)
+		}
+		f, err := os.OpenFile(filepath.Join(home, ".ssh", "known_hosts"), os.O_APPEND|os.O_WRONLY, 0600)
+		if err != nil {
+			return errors.Trace(err)
+		}
+		defer f.Close()
+		keyscan := exec.Command("ssh-keyscan", args[0])
+		keyscan.Stdout = f
+		keyscan.Stderr = os.Stderr
+		if err := keyscan.Run(); err != nil {
+			return errors.Trace(err)
+		}
+
+		logger.Info("Sending container changes to the remote machine")
 		compose := exec.Command("docker", "compose", "-f", "docker-compose.prod.yml", "up", "-d")
 		compose.Stderr = os.Stderr
 		compose.Stdout = os.Stdout
