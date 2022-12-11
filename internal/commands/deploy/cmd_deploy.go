@@ -167,7 +167,7 @@ var Cmd = &cobra.Command{
 			break
 		}
 
-		if query.IsRelease() {
+		if query.IsRelease() && flagTag == "" {
 			log.WithFields(log.Fields{
 				"name":    app,
 				"version": version,
