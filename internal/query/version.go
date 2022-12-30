@@ -47,7 +47,7 @@ func IsRelease() bool {
 	if !IsGitHubActions() {
 		return !gerrit.IsPreview()
 	}
-	return os.Getenv("GITHUB_REF_TYPE") == "tag"
+	return os.Getenv("GITHUB_REF_TYPE") == "tag" || os.Getenv("GITHUB_EVENT_NAME") == "workflow_dispatch"
 }
 
 func IsGitHubActions() bool {
