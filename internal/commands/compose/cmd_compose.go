@@ -78,20 +78,31 @@ func init() {
 			return errors.Trace(err)
 		}
 
+		logger.Info("Building remote containers")
+		build := exec.Command("docker", "compose", "-f", "docker-compose.prod.yml", "build")
+		prepareComposeCommand(build, args[0], keys[0].DSN.Public)
+		if err := build.Run(); err != nil {
+			return errors.Trace(err)
+		}
+
 		logger.Info("Sending container changes to the remote machine")
-		compose := exec.Command("docker", "compose", "-f", "docker-compose.prod.yml", "up", "-d")
-		compose.Stderr = os.Stderr
-		compose.Stdout = os.Stdout
-		compose.Env = os.Environ()
-		compose.Env = append(compose.Env, "DOCKER_HOST=ssh://jenkins@"+args[0])
-		compose.Env = append(compose.Env, "VERSION="+query.Version())
-		compose.Env = append(compose.Env, "SENTRY_DSN="+keys[0].DSN.Public)
-		if err := compose.Run(); err != nil {
+		up := exec.Command("docker", "compose", "-f", "docker-compose.prod.yml", "up", "-d")
+		prepareComposeCommand(up, args[0], keys[0].DSN.Public)
+		if err := up.Run(); err != nil {
 			return errors.Trace(err)
 		}
 
 		return nil
 	}
+}
+
+func prepareComposeCommand(cmd *exec.Cmd, machine, sentryDSN string) {
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
+	cmd.Env = os.Environ()
+	cmd.Env = append(cmd.Env, "DOCKER_HOST=ssh://jenkins@"+machine)
+	cmd.Env = append(cmd.Env, "VERSION="+query.Version())
+	cmd.Env = append(cmd.Env, "SENTRY_DSN="+sentryDSN)
 }
 
 func apiString(s string) *string {
