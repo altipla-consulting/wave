@@ -13,21 +13,19 @@ import (
 	"github.com/altipla-consulting/wave/internal/query"
 )
 
-var (
-	flagSentry string
-)
-
-func init() {
-	Cmd.Flags().StringVar(&flagSentry, "sentry", "", "Name of the sentry project to configure.")
-	Cmd.MarkPersistentFlagRequired("sentry")
-}
-
 var Cmd = &cobra.Command{
 	Use:     "compose",
 	Short:   "Deploy with Docker Compose through SSH to a remote machine.",
 	Example: "wave compose foo-1",
 	Args:    cobra.ExactArgs(1),
-	RunE: func(command *cobra.Command, args []string) error {
+}
+
+func init() {
+	var flagSentry string
+	Cmd.Flags().StringVar(&flagSentry, "sentry", "", "Name of the sentry project to configure.")
+	Cmd.MarkPersistentFlagRequired("sentry")
+
+	Cmd.RunE = func(command *cobra.Command, args []string) error {
 		logger := log.WithField("machine", args[0])
 
 		logger.WithField("version", query.Version()).Info("Deploy to remote machine with Docker Compose")
@@ -93,7 +91,7 @@ var Cmd = &cobra.Command{
 		}
 
 		return nil
-	},
+	}
 }
 
 func apiString(s string) *string {
