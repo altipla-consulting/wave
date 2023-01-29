@@ -106,8 +106,6 @@ func apiString(s string) *string {
 }
 
 func cleanHost(ctx context.Context, logger *log.Entry, host string) error {
-	log.WithField("host", host).Info("Cleaning stored host authentication")
-
 	keygen := exec.CommandContext(ctx, "ssh-keygen", "-F", host)
 	keygen.Stderr = os.Stderr
 	if err := keygen.Run(); err != nil {
@@ -119,7 +117,7 @@ func cleanHost(ctx context.Context, logger *log.Entry, host string) error {
 		return nil
 	} else {
 		// Remove the stored host, could be outdated.
-		logger.WithField("host", host).Info("Removing existing host authentication")
+		logger.WithField("host", host).Info("Removing old stored host authentication")
 		rm := exec.Command("ssh-keygen", "-R", host)
 		rm.Stderr = os.Stderr
 		if err := rm.Run(); err != nil {
