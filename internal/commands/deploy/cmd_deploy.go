@@ -22,21 +22,24 @@ const (
 	maxDeployAttempts = 2
 )
 
-var (
-	flagProject        string
-	flagMemory         string
-	flagServiceAccount string
-	flagSentry         string
-	flagVolumeSecret   []string
-	flagEnvSecret      []string
-	flagEnv            []string
-	flagTag            string
-	flagAlwaysOn       bool
-	flagRegion         string
-	flagCloudSQL       []string
-)
+var Cmd = &cobra.Command{
+	Use:     "deploy",
+	Short:   "Deploy a container to Cloud Run.",
+	Example: "wave deploy foo",
+	Args:    cobra.ExactArgs(1),
+}
 
 func init() {
+	var flagProject, flagRegion string
+	var flagMemory string
+	var flagServiceAccount string
+	var flagSentry string
+	var flagVolumeSecret, flagEnvSecret []string
+	var flagEnv []string
+	var flagTag string
+	var flagAlwaysOn bool
+	var flagCloudSQL []string
+	var flagConcurrency int64
 	Cmd.Flags().StringVar(&flagProject, "project", "", "Google Cloud project where the container will be stored. Defaults to the GOOGLE_PROJECT environment variable.")
 	Cmd.Flags().StringVar(&flagMemory, "memory", "", "Memory available inside the Cloud Run application. Default: 256Mi.")
 	Cmd.Flags().StringVar(&flagServiceAccount, "service-account", "", "Service account. Defaults to one with the name of the application.")
@@ -48,15 +51,10 @@ func init() {
 	Cmd.Flags().BoolVar(&flagAlwaysOn, "always-on", false, "App will always have CPU even if it's in the background without requests.")
 	Cmd.Flags().StringVar(&flagRegion, "region", "europe-west1", "Region where resources will be hosted.")
 	Cmd.Flags().StringSliceVar(&flagCloudSQL, "cloudsql", nil, "CloudSQL instances to connect to. Only the name.")
+	Cmd.Flags().Int64Var(&flagConcurrency, "concurrency", 50, "Maximum number of concurrent requests.")
 	Cmd.MarkPersistentFlagRequired("sentry")
-}
 
-var Cmd = &cobra.Command{
-	Use:     "deploy",
-	Short:   "Deploy a container to Cloud Run.",
-	Example: "wave deploy foo",
-	Args:    cobra.ExactArgs(1),
-	RunE: func(command *cobra.Command, args []string) error {
+	Cmd.RunE = func(command *cobra.Command, args []string) error {
 		app := args[0]
 
 		if flagProject == "" {
@@ -106,7 +104,7 @@ var Cmd = &cobra.Command{
 			"--image", "eu.gcr.io/" + flagProject + "/" + app + ":" + version,
 			"--region", flagRegion,
 			"--platform", "managed",
-			"--concurrency", "50",
+			"--concurrency", fmt.Sprintf("%d", flagConcurrency),
 			"--timeout", "60s",
 			"--service-account", flagServiceAccount + "@" + flagProject + ".iam.gserviceaccount.com",
 			"--memory", flagMemory,
@@ -189,7 +187,7 @@ var Cmd = &cobra.Command{
 		}
 
 		return nil
-	},
+	}
 }
 
 func apiString(s string) *string {
