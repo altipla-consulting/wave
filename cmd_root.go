@@ -1,9 +1,7 @@
 package main
 
 import (
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
-
+	"github.com/altipla-consulting/cmdbase"
 	"github.com/altipla-consulting/wave/internal/commands/ar"
 	"github.com/altipla-consulting/wave/internal/commands/build"
 	"github.com/altipla-consulting/wave/internal/commands/compose"
@@ -14,10 +12,8 @@ import (
 	"github.com/altipla-consulting/wave/internal/commands/preview"
 )
 
-var flagDebug bool
-
 func init() {
-	cmdRoot.PersistentFlags().BoolVarP(&flagDebug, "debug", "d", false, "Enable debug logging for this tool.")
+	cmdRoot := cmdbase.CmdRoot("wave", "Build and publish applications.")
 	cmdRoot.AddCommand(ar.Cmd)
 	cmdRoot.AddCommand(build.Cmd)
 	cmdRoot.AddCommand(compose.Cmd)
@@ -26,16 +22,4 @@ func init() {
 	cmdRoot.AddCommand(netlify.Cmd)
 	cmdRoot.AddCommand(pages.Cmd)
 	cmdRoot.AddCommand(preview.Cmd)
-}
-
-var cmdRoot = &cobra.Command{
-	Use:          "wave",
-	Short:        "Build and publish applications.",
-	SilenceUsage: true,
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		log.SetFormatter(new(log.TextFormatter))
-		if flagDebug {
-			log.SetLevel(log.DebugLevel)
-		}
-	},
 }
