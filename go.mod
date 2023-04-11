@@ -3,7 +3,7 @@ module github.com/altipla-consulting/wave
 go 1.18
 
 require (
-	github.com/altipla-consulting/cmdbase v0.2.1
+	github.com/altipla-consulting/cmdbase v0.2.2
 	github.com/altipla-consulting/errors v1.2.2
 	github.com/atlassian/go-sentry-api v0.0.0-20220421190609-43d88274bec6
 	github.com/google/go-jsonnet v0.18.0

@@ -10,6 +10,8 @@ github.com/Shopify/goreferrer v0.0.0-20181106222321-ec9c9a553398/go.mod h1:a1uqR
 github.com/ajg/form v1.5.1/go.mod h1:uL1WgH+h2mgNtvBq0339dVnzXdBETtL2LeUXaIv25UY=
 github.com/altipla-consulting/cmdbase v0.2.1 h1:4RXCQZeNlN/GNf8SVif79BnS253fpB4Zk/xSn5kcfF8=
 github.com/altipla-consulting/cmdbase v0.2.1/go.mod h1:Hh49+Z9XSBFKb1clJQ9zgqtCsRJODFPH4nXOk4C6bT8=
+github.com/altipla-consulting/cmdbase v0.2.2 h1:kRQyFGCdhJTDDgIt4dnXRUxmoD9Kh1mdWZyKU4t0K40=
+github.com/altipla-consulting/cmdbase v0.2.2/go.mod h1:sFQG11VJ5A5+ZYwyguBtXCZ11M3bxxk7kdOIhU+bCYc=
 github.com/altipla-consulting/errors v1.2.2 h1:Bg3mt/h99WrR091AcE1tazibN4Zals9p4V/G6G5PUqk=
 github.com/altipla-consulting/errors v1.2.2/go.mod h1:wqLbQEvpmFHArZcU8AvRKZuzeF3LL2gw+dhk3+ztikQ=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
