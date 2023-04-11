@@ -66,6 +66,9 @@ func init() {
 		if err != nil {
 			return errors.Trace(err)
 		}
+		if err := os.MkdirAll(filepath.Join(home, ".ssh"), 0600); err != nil {
+			return errors.Trace(err)
+		}
 		f, err := os.OpenFile(filepath.Join(home, ".ssh", "known_hosts"), os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 		if err != nil {
 			return errors.Trace(err)
