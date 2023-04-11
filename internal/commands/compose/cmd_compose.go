@@ -48,26 +48,30 @@ func init() {
 			return errors.Trace(err)
 		}
 
-		if err := cleanHost(cmd.Context(), logger, args[0]); err != nil {
-			return errors.Trace(err)
-		}
-		ips, err := net.DefaultResolver.LookupHost(cmd.Context(), args[0])
-		if err != nil {
-			return errors.Trace(err)
-		}
-		for _, ip := range ips {
-			if err := cleanHost(cmd.Context(), logger, ip); err != nil {
-				return errors.Trace(err)
-			}
-		}
-
 		logger.Info("Downloading SSH key from the remote machine")
 		home, err := os.UserHomeDir()
 		if err != nil {
 			return errors.Trace(err)
 		}
-		if err := os.MkdirAll(filepath.Join(home, ".ssh"), 0700); err != nil {
+		if _, err := os.Stat(filepath.Join(home, ".ssh", "known_hosts")); err != nil && !os.IsNotExist(err) {
 			return errors.Trace(err)
+		} else if err == nil {
+			if err := cleanHost(cmd.Context(), logger, args[0]); err != nil {
+				return errors.Trace(err)
+			}
+			ips, err := net.DefaultResolver.LookupHost(cmd.Context(), args[0])
+			if err != nil {
+				return errors.Trace(err)
+			}
+			for _, ip := range ips {
+				if err := cleanHost(cmd.Context(), logger, ip); err != nil {
+					return errors.Trace(err)
+				}
+			}
+		} else {
+			if err := os.MkdirAll(filepath.Join(home, ".ssh"), 0700); err != nil {
+				return errors.Trace(err)
+			}
 		}
 		f, err := os.OpenFile(filepath.Join(home, ".ssh", "known_hosts"), os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 		if err != nil {
