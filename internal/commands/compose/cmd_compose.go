@@ -31,6 +31,10 @@ func init() {
 		logger := log.WithField("machine", args[0])
 		logger.WithField("version", query.Version()).Info("Deploy to remote machine with Docker Compose")
 
+		if os.Getenv("SENTRY_AUTH_TOKEN") == "" {
+			return errors.Errorf("missing SENTRY_AUTH_TOKEN environment variable")
+		}
+
 		client, err := sentry.NewClient(os.Getenv("SENTRY_AUTH_TOKEN"), nil, nil)
 		if err != nil {
 			return errors.Trace(err)
