@@ -10,10 +10,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/altipla-consulting/errors"
 	"github.com/atlassian/go-sentry-api"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"libs.altipla.consulting/errors"
 
 	"github.com/altipla-consulting/wave/internal/query"
 )

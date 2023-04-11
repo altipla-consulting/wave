@@ -4,9 +4,9 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/altipla-consulting/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"libs.altipla.consulting/errors"
 
 	"github.com/altipla-consulting/wave/internal/query"
 )

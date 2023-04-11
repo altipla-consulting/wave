@@ -11,12 +11,12 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/altipla-consulting/errors"
 	"github.com/atlassian/go-sentry-api"
 	"github.com/google/go-jsonnet"
 	"github.com/google/go-jsonnet/ast"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"libs.altipla.consulting/errors"
 
 	"github.com/altipla-consulting/wave/embed"
 	"github.com/altipla-consulting/wave/internal/query"

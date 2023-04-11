@@ -5,8 +5,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/altipla-consulting/errors"
 	log "github.com/sirupsen/logrus"
-	"libs.altipla.consulting/errors"
 )
 
 func main() {
