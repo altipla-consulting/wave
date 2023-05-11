@@ -51,7 +51,7 @@ func init() {
 	cmdDeploy.Flags().StringVar(&flagRegion, "region", "europe-west1", "Region where resources will be hosted.")
 	cmdDeploy.Flags().StringSliceVar(&flagCloudSQL, "cloudsql", nil, "CloudSQL instances to connect to. Only the name.")
 	cmdDeploy.Flags().Int64Var(&flagConcurrency, "concurrency", 50, "Maximum number of concurrent requests.")
-	cmdDeploy.MarkPersistentFlagRequired("sentry")
+	cmdDeploy.MarkFlagRequired("sentry")
 
 	cmdDeploy.RunE = func(command *cobra.Command, args []string) error {
 		app := args[0]

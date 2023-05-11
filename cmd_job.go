@@ -29,13 +29,9 @@ var cmdJob = &cobra.Command{
 func init() {
 	const maxDeployAttempts = 2
 
-	var flagProject, flagRegion string
-	var flagMemory string
-	var flagServiceAccount string
-	var flagSentry string
-	var flagEnvSecret []string
-	var flagEnv []string
-	var flagCloudSQL []string
+	var flagProject, flagRegion, flagRepo string
+	var flagMemory, flagServiceAccount, flagSentry string
+	var flagEnv, flagEnvSecret, flagCloudSQL []string
 	cmdJob.Flags().StringVar(&flagProject, "project", "", "Google Cloud project where the container will be stored. Defaults to the GOOGLE_PROJECT environment variable.")
 	cmdJob.Flags().StringVar(&flagMemory, "memory", "", "Memory available inside the Cloud Run application. Default: 256Mi.")
 	cmdJob.Flags().StringVar(&flagServiceAccount, "service-account", "", "Service account. Defaults to one with the name of the application.")
@@ -44,7 +40,9 @@ func init() {
 	cmdJob.Flags().StringSliceVar(&flagEnv, "env", nil, "Custom environment variables to define as `KEY=value` pairs.")
 	cmdJob.Flags().StringVar(&flagRegion, "region", "europe-west1", "Region where resources will be hosted.")
 	cmdJob.Flags().StringSliceVar(&flagCloudSQL, "cloudsql", nil, "CloudSQL instances to connect to. Only the name.")
-	cmdJob.MarkPersistentFlagRequired("sentry")
+	cmdAR.Flags().StringVar(&flagRepo, "repo", "", "Artifact Registry repository name where the container is stored.")
+	cmdJob.MarkFlagRequired("sentry")
+	cmdJob.MarkFlagRequired("repo")
 
 	cmdJob.RunE = func(command *cobra.Command, args []string) error {
 		app := args[0]
@@ -89,7 +87,7 @@ func init() {
 		gcloud := []string{
 			"beta", "run", "jobs", "deploy",
 			app,
-			"--image", "eu.gcr.io/" + flagProject + "/" + app + ":" + version,
+			"--image", fmt.Sprintf("europe-west1-docker.pkg.dev/%s/%s/%s:%s", flagProject, flagRepo, app, version),
 			"--region", flagRegion,
 			"--task-timeout", "10m",
 			"--service-account", flagServiceAccount + "@" + flagProject + ".iam.gserviceaccount.com",
