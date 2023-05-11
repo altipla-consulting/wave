@@ -21,6 +21,7 @@ func init() {
 	cmdRoot.AddCommand(cmdAR)
 	cmdRoot.AddCommand(cmdBuild)
 	cmdRoot.AddCommand(cmdDeploy)
+	cmdRoot.AddCommand(cmdJob)
 	cmdRoot.AddCommand(cmdKubernetes)
 	cmdRoot.AddCommand(cmdNetlify)
 	cmdRoot.AddCommand(cmdPages)
