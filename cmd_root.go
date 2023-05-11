@@ -13,7 +13,11 @@ func main() {
 }
 
 func init() {
-	cmdRoot := cmdbase.CmdRoot("wave", "Build and publish applications.")
+	cmdRoot := cmdbase.CmdRoot(
+		"wave",
+		"Build and publish applications.",
+		cmdbase.WithInstall(),
+		cmdbase.WithUpdate("github.com/altipla-consulting/wave"))
 	cmdRoot.AddCommand(cmdAR)
 	cmdRoot.AddCommand(cmdBuild)
 	cmdRoot.AddCommand(cmdDeploy)
