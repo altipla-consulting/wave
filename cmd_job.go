@@ -40,7 +40,7 @@ func init() {
 	cmdJob.Flags().StringSliceVar(&flagEnv, "env", nil, "Custom environment variables to define as `KEY=value` pairs.")
 	cmdJob.Flags().StringVar(&flagRegion, "region", "europe-west1", "Region where resources will be hosted.")
 	cmdJob.Flags().StringSliceVar(&flagCloudSQL, "cloudsql", nil, "CloudSQL instances to connect to. Only the name.")
-	cmdAR.Flags().StringVar(&flagRepo, "repo", "", "Artifact Registry repository name where the container is stored.")
+	cmdJob.Flags().StringVar(&flagRepo, "repo", "", "Artifact Registry repository name where the container is stored.")
 	cmdJob.MarkFlagRequired("sentry")
 	cmdJob.MarkFlagRequired("repo")
 
