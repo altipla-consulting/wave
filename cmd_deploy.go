@@ -15,6 +15,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"github.com/altipla-consulting/wave/internal/env"
 	"github.com/altipla-consulting/wave/internal/query"
 )
 
@@ -56,7 +57,7 @@ func init() {
 		app := args[0]
 
 		if flagProject == "" {
-			flagProject = os.Getenv("GOOGLE_PROJECT")
+			flagProject = env.GoogleProject()
 		}
 		if flagServiceAccount == "" {
 			flagServiceAccount = app
@@ -69,7 +70,7 @@ func init() {
 			}
 		}
 
-		client, err := sentry.NewClient(os.Getenv("SENTRY_AUTH_TOKEN"), nil, nil)
+		client, err := sentry.NewClient(env.SentryAuthToken(), nil, nil)
 		if err != nil {
 			return errors.Trace(err)
 		}

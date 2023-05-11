@@ -12,6 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"github.com/altipla-consulting/wave/internal/env"
 	"github.com/altipla-consulting/wave/internal/query"
 )
 
@@ -31,11 +32,7 @@ func init() {
 		logger := log.WithField("machine", args[0])
 		logger.WithField("version", query.Version()).Info("Deploy to remote machine with Docker Compose")
 
-		if os.Getenv("SENTRY_AUTH_TOKEN") == "" {
-			return errors.Errorf("missing SENTRY_AUTH_TOKEN environment variable")
-		}
-
-		client, err := sentry.NewClient(os.Getenv("SENTRY_AUTH_TOKEN"), nil, nil)
+		client, err := sentry.NewClient(env.SentryAuthToken(), nil, nil)
 		if err != nil {
 			return errors.Trace(err)
 		}

@@ -2,7 +2,6 @@ package main
 
 import (
 	"net/url"
-	"os"
 	"os/exec"
 	"strings"
 
@@ -10,6 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"github.com/altipla-consulting/wave/internal/env"
 	"github.com/altipla-consulting/wave/internal/gerrit"
 	"github.com/altipla-consulting/wave/internal/query"
 )
@@ -33,7 +33,7 @@ func init() {
 
 	cmdPreview.RunE = func(command *cobra.Command, args []string) error {
 		if flagProject == "" {
-			flagProject = os.Getenv("GOOGLE_PROJECT")
+			flagProject = env.GoogleProject()
 		}
 
 		if len(flagCloudRun) == 0 && len(flagNetlify) == 0 && len(flagCloudflare) == 0 {

@@ -19,6 +19,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/altipla-consulting/wave/embed"
+	"github.com/altipla-consulting/wave/internal/env"
 	"github.com/altipla-consulting/wave/internal/query"
 )
 
@@ -44,7 +45,7 @@ func init() {
 			return errors.Trace(err)
 		}
 
-		sentryClient, err := sentry.NewClient(os.Getenv("SENTRY_AUTH_TOKEN"), nil, nil)
+		sentryClient, err := sentry.NewClient(env.SentryAuthToken(), nil, nil)
 		if err != nil {
 			return errors.Trace(err)
 		}

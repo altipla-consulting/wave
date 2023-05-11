@@ -9,6 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"github.com/altipla-consulting/wave/internal/env"
 	"github.com/altipla-consulting/wave/internal/query"
 )
 
@@ -30,7 +31,7 @@ func init() {
 		app := args[0]
 
 		if flagProject == "" {
-			flagProject = os.Getenv("GOOGLE_PROJECT")
+			flagProject = env.GoogleProject()
 		}
 
 		version := query.Version()
