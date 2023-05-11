@@ -91,7 +91,7 @@ func init() {
 			app,
 			"--image", "eu.gcr.io/" + flagProject + "/" + app + ":" + version,
 			"--region", flagRegion,
-			"--timeout", "10m",
+			"--task-timeout", "10m",
 			"--service-account", flagServiceAccount + "@" + flagProject + ".iam.gserviceaccount.com",
 			"--memory", flagMemory,
 			"--set-env-vars", strings.Join(env, ","),
