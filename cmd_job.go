@@ -56,7 +56,7 @@ func init() {
 			flagServiceAccount = app
 		}
 		if flagMemory == "" {
-			flagMemory = "256Mi"
+			flagMemory = "512Mi"
 		}
 
 		client, err := sentry.NewClient(env.SentryAuthToken(), nil, nil)
