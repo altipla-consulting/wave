@@ -1,4 +1,4 @@
-package deploy
+package main
 
 import (
 	"bytes"
@@ -18,11 +18,7 @@ import (
 	"github.com/altipla-consulting/wave/internal/query"
 )
 
-const (
-	maxDeployAttempts = 2
-)
-
-var Cmd = &cobra.Command{
+var cmdDeploy = &cobra.Command{
 	Use:     "deploy",
 	Short:   "Deploy a container to Cloud Run.",
 	Example: "wave deploy foo",
@@ -30,6 +26,8 @@ var Cmd = &cobra.Command{
 }
 
 func init() {
+	const maxDeployAttempts = 2
+
 	var flagProject, flagRegion string
 	var flagMemory string
 	var flagServiceAccount string
@@ -40,21 +38,21 @@ func init() {
 	var flagAlwaysOn bool
 	var flagCloudSQL []string
 	var flagConcurrency int64
-	Cmd.Flags().StringVar(&flagProject, "project", "", "Google Cloud project where the container will be stored. Defaults to the GOOGLE_PROJECT environment variable.")
-	Cmd.Flags().StringVar(&flagMemory, "memory", "", "Memory available inside the Cloud Run application. Default: 256Mi.")
-	Cmd.Flags().StringVar(&flagServiceAccount, "service-account", "", "Service account. Defaults to one with the name of the application.")
-	Cmd.Flags().StringVar(&flagSentry, "sentry", "", "Name of the sentry project to configure.")
-	Cmd.Flags().StringSliceVar(&flagVolumeSecret, "volume-secret", nil, "Secrets to mount as volumes.")
-	Cmd.Flags().StringSliceVar(&flagEnvSecret, "env-secret", nil, "Secrets to mount as environment variables.")
-	Cmd.Flags().StringSliceVar(&flagEnv, "env", nil, "Custom environment variables to define as `KEY=value` pairs.")
-	Cmd.Flags().StringVar(&flagTag, "tag", "", "Name of the revision included in the URL. Defaults to the Gerrit change and patchset.")
-	Cmd.Flags().BoolVar(&flagAlwaysOn, "always-on", false, "App will always have CPU even if it's in the background without requests.")
-	Cmd.Flags().StringVar(&flagRegion, "region", "europe-west1", "Region where resources will be hosted.")
-	Cmd.Flags().StringSliceVar(&flagCloudSQL, "cloudsql", nil, "CloudSQL instances to connect to. Only the name.")
-	Cmd.Flags().Int64Var(&flagConcurrency, "concurrency", 50, "Maximum number of concurrent requests.")
-	Cmd.MarkPersistentFlagRequired("sentry")
+	cmdDeploy.Flags().StringVar(&flagProject, "project", "", "Google Cloud project where the container will be stored. Defaults to the GOOGLE_PROJECT environment variable.")
+	cmdDeploy.Flags().StringVar(&flagMemory, "memory", "", "Memory available inside the Cloud Run application. Default: 256Mi.")
+	cmdDeploy.Flags().StringVar(&flagServiceAccount, "service-account", "", "Service account. Defaults to one with the name of the application.")
+	cmdDeploy.Flags().StringVar(&flagSentry, "sentry", "", "Name of the sentry project to configure.")
+	cmdDeploy.Flags().StringSliceVar(&flagVolumeSecret, "volume-secret", nil, "Secrets to mount as volumes.")
+	cmdDeploy.Flags().StringSliceVar(&flagEnvSecret, "env-secret", nil, "Secrets to mount as environment variables.")
+	cmdDeploy.Flags().StringSliceVar(&flagEnv, "env", nil, "Custom environment variables to define as `KEY=value` pairs.")
+	cmdDeploy.Flags().StringVar(&flagTag, "tag", "", "Name of the revision included in the URL. Defaults to the Gerrit change and patchset.")
+	cmdDeploy.Flags().BoolVar(&flagAlwaysOn, "always-on", false, "App will always have CPU even if it's in the background without requests.")
+	cmdDeploy.Flags().StringVar(&flagRegion, "region", "europe-west1", "Region where resources will be hosted.")
+	cmdDeploy.Flags().StringSliceVar(&flagCloudSQL, "cloudsql", nil, "CloudSQL instances to connect to. Only the name.")
+	cmdDeploy.Flags().Int64Var(&flagConcurrency, "concurrency", 50, "Maximum number of concurrent requests.")
+	cmdDeploy.MarkPersistentFlagRequired("sentry")
 
-	Cmd.RunE = func(command *cobra.Command, args []string) error {
+	cmdDeploy.RunE = func(command *cobra.Command, args []string) error {
 		app := args[0]
 
 		if flagProject == "" {
@@ -77,9 +75,9 @@ func init() {
 		}
 
 		org := sentry.Organization{
-			Slug: apiString("altipla-consulting"),
+			Slug: sentryAPIString("altipla-consulting"),
 		}
-		keys, err := client.GetClientKeys(org, sentry.Project{Slug: apiString(flagSentry)})
+		keys, err := client.GetClientKeys(org, sentry.Project{Slug: sentryAPIString(flagSentry)})
 		if err != nil {
 			return errors.Trace(err)
 		}
@@ -188,10 +186,6 @@ func init() {
 
 		return nil
 	}
-}
-
-func apiString(s string) *string {
-	return &s
 }
 
 func shouldRetry(s string) bool {

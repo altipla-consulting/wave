@@ -1,4 +1,4 @@
-package netlify
+package main
 
 import (
 	"os"
@@ -12,26 +12,19 @@ import (
 	"github.com/altipla-consulting/wave/internal/query"
 )
 
-type cmdFlags struct {
-	Tag    string
-	Source string
-}
-
-var (
-	flags cmdFlags
-)
-
-func init() {
-	Cmd.PersistentFlags().StringVar(&flags.Tag, "tag", "", "Name of the revision included in the URL. Defaults to the Gerrit change and patchset.")
-	Cmd.PersistentFlags().StringVar(&flags.Source, "source", "", "Source folder. Defaults to the name of the application.")
-}
-
-var Cmd = &cobra.Command{
+var cmdNetlify = &cobra.Command{
 	Use:     "netlify",
 	Short:   "Deploy a site to Netlify.",
 	Example: "wave netlify foo",
 	Args:    cobra.ExactArgs(1),
-	RunE: func(command *cobra.Command, args []string) error {
+}
+
+func init() {
+	var flagTag, flagSource string
+	cmdNetlify.PersistentFlags().StringVar(&flagTag, "tag", "", "Name of the revision included in the URL. Defaults to the Gerrit change and patchset.")
+	cmdNetlify.PersistentFlags().StringVar(&flagSource, "source", "", "Source folder. Defaults to the name of the application.")
+
+	cmdNetlify.RunE = func(command *cobra.Command, args []string) error {
 		site := args[0]
 
 		log.Info("Get last commit message")
@@ -61,7 +54,7 @@ var Cmd = &cobra.Command{
 			"--json",
 			"--message", lastCommit,
 		}
-		if tag := query.VersionHostname(flags.Tag); tag != "" {
+		if tag := query.VersionHostname(flagTag); tag != "" {
 			netlify = append(netlify, "--alias", tag)
 		}
 		if query.IsRelease() {
@@ -71,11 +64,11 @@ var Cmd = &cobra.Command{
 		build := exec.Command(netlify[0], netlify[1:]...)
 		build.Stdout = os.Stdout
 		build.Stderr = os.Stderr
-		build.Dir = flags.Source
+		build.Dir = flagSource
 		if err := build.Run(); err != nil {
 			return errors.Trace(err)
 		}
 
 		return nil
-	},
+	}
 }

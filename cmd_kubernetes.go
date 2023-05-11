@@ -1,4 +1,4 @@
-package kubernetes
+package main
 
 import (
 	"bytes"
@@ -22,26 +22,23 @@ import (
 	"github.com/altipla-consulting/wave/internal/query"
 )
 
-var (
-	flagFilter   string
-	flagEnv      []string
-	flagIncludes []string
-	flagApply    bool
-)
-
-func init() {
-	Cmd.PersistentFlags().StringVarP(&flagFilter, "filter", "f", "", "Filter top level items when generating items.")
-	Cmd.PersistentFlags().StringSliceVarP(&flagEnv, "env", "e", nil, "Set external variables.")
-	Cmd.PersistentFlags().StringSliceVarP(&flagIncludes, "include", "i", nil, "Directories to include when running the jsonnet script.")
-	Cmd.PersistentFlags().BoolVar(&flagApply, "apply", false, "Apply the output to the Kubernetes cluster instead of printing it.")
-}
-
-var Cmd = &cobra.Command{
+var cmdKubernetes = &cobra.Command{
 	Use:     "kubernetes",
 	Short:   "Run a jsonnet script and deploy the result to Kubernetes.",
 	Example: "wave kubernetes k8s/deploy.jsonnet",
 	Args:    cobra.ExactArgs(1),
-	RunE: func(command *cobra.Command, args []string) error {
+}
+
+func init() {
+	var flagFilter string
+	var flagEnv, flagIncludes []string
+	var flagApply bool
+	cmdKubernetes.PersistentFlags().StringVarP(&flagFilter, "filter", "f", "", "Filter top level items when generating items.")
+	cmdKubernetes.PersistentFlags().StringSliceVarP(&flagEnv, "env", "e", nil, "Set external variables.")
+	cmdKubernetes.PersistentFlags().StringSliceVarP(&flagIncludes, "include", "i", nil, "Directories to include when running the jsonnet script.")
+	cmdKubernetes.PersistentFlags().BoolVar(&flagApply, "apply", false, "Apply the output to the Kubernetes cluster instead of printing it.")
+
+	cmdKubernetes.RunE = func(command *cobra.Command, args []string) error {
 		content, err := ioutil.ReadFile(args[0])
 		if err != nil {
 			return errors.Trace(err)
@@ -55,7 +52,13 @@ var Cmd = &cobra.Command{
 			nativeFuncSentry(sentryClient),
 		}
 
-		result, err := runScript(args[0], content, nativeFuncs)
+		opts := RunOptions{
+			NativeFuncs: nativeFuncs,
+			Includes:    flagIncludes,
+			Env:         flagEnv,
+			Filter:      flagFilter,
+		}
+		result, err := runScript(args[0], content, opts)
 		if err != nil {
 			return errors.Trace(err)
 		}
@@ -79,10 +82,17 @@ var Cmd = &cobra.Command{
 		}
 
 		return nil
-	},
+	}
 }
 
-func runScript(filename string, content []byte, nativeFuncs []*jsonnet.NativeFunction) (*bytes.Buffer, error) {
+type RunOptions struct {
+	NativeFuncs []*jsonnet.NativeFunction
+	Includes    []string
+	Env         []string
+	Filter      string
+}
+
+func runScript(filename string, content []byte, opts RunOptions) (*bytes.Buffer, error) {
 	dir, err := ioutil.TempDir("", "wave")
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -94,15 +104,15 @@ func runScript(filename string, content []byte, nativeFuncs []*jsonnet.NativeFun
 
 	vm := jsonnet.MakeVM()
 	vm.Importer(&jsonnet.FileImporter{
-		JPaths: append(flagIncludes, ".", dir),
+		JPaths: append(opts.Includes, ".", dir),
 	})
-	for _, f := range nativeFuncs {
+	for _, f := range opts.NativeFuncs {
 		vm.NativeFunction(f)
 	}
 
 	vm.ExtVar("version", query.Version())
 
-	for _, v := range flagEnv {
+	for _, v := range opts.Env {
 		parts := strings.Split(v, "=")
 		if len(parts) != 2 {
 			return nil, errors.Errorf("malformed environment variable: %s", v)
@@ -123,8 +133,8 @@ func runScript(filename string, content []byte, nativeFuncs []*jsonnet.NativeFun
 		Kind:       "List",
 	}
 	var filters []string
-	if flagFilter != "" {
-		filters = strings.Split(flagFilter, ".")
+	if opts.Filter != "" {
+		filters = strings.Split(opts.Filter, ".")
 	}
 	extractItems(list, filters, result)
 
@@ -136,19 +146,15 @@ func runScript(filename string, content []byte, nativeFuncs []*jsonnet.NativeFun
 	return &buf, nil
 }
 
-func apiString(s string) *string {
-	return &s
-}
-
 func nativeFuncSentry(client *sentry.Client) *jsonnet.NativeFunction {
 	return &jsonnet.NativeFunction{
 		Name:   "sentry",
 		Params: []ast.Identifier{"name"},
 		Func: func(args []interface{}) (interface{}, error) {
 			org := sentry.Organization{
-				Slug: apiString("altipla-consulting"),
+				Slug: sentryAPIString("altipla-consulting"),
 			}
-			keys, err := client.GetClientKeys(org, sentry.Project{Slug: apiString(args[0].(string))})
+			keys, err := client.GetClientKeys(org, sentry.Project{Slug: sentryAPIString(args[0].(string))})
 			if err != nil {
 				return nil, errors.Trace(err)
 			}

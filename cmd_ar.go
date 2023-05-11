@@ -1,4 +1,4 @@
-package ar
+package main
 
 import (
 	"fmt"
@@ -12,25 +12,21 @@ import (
 	"github.com/altipla-consulting/wave/internal/query"
 )
 
-var (
-	flagProject string
-	flagRepo    string
-	flagSource  string
-)
-
-func init() {
-	Cmd.Flags().StringVar(&flagProject, "project", "", "Google Cloud project where the container will be stored. Defaults to the GOOGLE_PROJECT environment variable.")
-	Cmd.Flags().StringVar(&flagRepo, "repo", "", "Artifact Registry repository name where the container will be stored.")
-	Cmd.Flags().StringVar(&flagSource, "source", "", "Source folder. Defaults to a folder with the name of the app.")
-	Cmd.MarkFlagRequired("repo")
-}
-
-var Cmd = &cobra.Command{
+var cmdAR = &cobra.Command{
 	Use:     "ar",
 	Short:   "Build a container from a predefined folder structure deploying to Artifact Registry.",
 	Example: "wave ar foo",
 	Args:    cobra.ExactArgs(1),
-	RunE: func(command *cobra.Command, args []string) error {
+}
+
+func init() {
+	var flagProject, flagRepo, flagSource string
+	cmdAR.Flags().StringVar(&flagProject, "project", "", "Google Cloud project where the container will be stored. Defaults to the GOOGLE_PROJECT environment variable.")
+	cmdAR.Flags().StringVar(&flagRepo, "repo", "", "Artifact Registry repository name where the container will be stored.")
+	cmdAR.Flags().StringVar(&flagSource, "source", "", "Source folder. Defaults to a folder with the name of the app.")
+	cmdAR.MarkFlagRequired("repo")
+
+	cmdAR.RunE = func(command *cobra.Command, args []string) error {
 		app := args[0]
 
 		if flagProject == "" {
@@ -80,5 +76,5 @@ var Cmd = &cobra.Command{
 		}
 
 		return nil
-	},
+	}
 }

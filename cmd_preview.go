@@ -1,4 +1,4 @@
-package preview
+package main
 
 import (
 	"net/url"
@@ -14,30 +14,24 @@ import (
 	"github.com/altipla-consulting/wave/internal/query"
 )
 
-var (
-	flagProject    string
-	flagTag        string
-	flagCloudRun   []string
-	flagNetlify    []string
-	flagRegion     string
-	flagCloudflare []string
-)
-
-func init() {
-	Cmd.PersistentFlags().StringVar(&flagProject, "project", "", "Google Cloud project where the container will be stored. Defaults to the GOOGLE_PROJECT environment variable.")
-	Cmd.PersistentFlags().StringVar(&flagTag, "tag", "", "Name of the revision included in the URL. Defaults to the Gerrit change and patchset.")
-	Cmd.PersistentFlags().StringSliceVar(&flagCloudRun, "cloud-run", nil, "Cloud Run applications. Format: `local-name:cloud-run-name`.")
-	Cmd.PersistentFlags().StringSliceVar(&flagNetlify, "netlify", nil, "Netlify applications. Format: `local-name:netlify-name`.")
-	Cmd.PersistentFlags().StringVar(&flagRegion, "region", "europe-west1", "Region where resources will be hosted.")
-	Cmd.PersistentFlags().StringSliceVar(&flagCloudflare, "cloudflare", nil, "Cloudflare applications. Format: `local-name:cloudflare-name`.")
-}
-
-var Cmd = &cobra.Command{
+var cmdPreview = &cobra.Command{
 	Use:     "preview",
 	Short:   "Send preview URLs as a comment to Gerrit.",
 	Example: "wave preview --cloud-run my-app",
 	Args:    cobra.NoArgs,
-	RunE: func(command *cobra.Command, args []string) error {
+}
+
+func init() {
+	var flagProject, flagTag, flagRegion string
+	var flagCloudRun, flagNetlify, flagCloudflare []string
+	cmdPreview.PersistentFlags().StringVar(&flagProject, "project", "", "Google Cloud project where the container will be stored. Defaults to the GOOGLE_PROJECT environment variable.")
+	cmdPreview.PersistentFlags().StringVar(&flagTag, "tag", "", "Name of the revision included in the URL. Defaults to the Gerrit change and patchset.")
+	cmdPreview.PersistentFlags().StringSliceVar(&flagCloudRun, "cloud-run", nil, "Cloud Run applications. Format: `local-name:cloud-run-name`.")
+	cmdPreview.PersistentFlags().StringSliceVar(&flagNetlify, "netlify", nil, "Netlify applications. Format: `local-name:netlify-name`.")
+	cmdPreview.PersistentFlags().StringVar(&flagRegion, "region", "europe-west1", "Region where resources will be hosted.")
+	cmdPreview.PersistentFlags().StringSliceVar(&flagCloudflare, "cloudflare", nil, "Cloudflare applications. Format: `local-name:cloudflare-name`.")
+
+	cmdPreview.RunE = func(command *cobra.Command, args []string) error {
 		if flagProject == "" {
 			flagProject = os.Getenv("GOOGLE_PROJECT")
 		}
@@ -106,7 +100,7 @@ var Cmd = &cobra.Command{
 		}
 
 		return nil
-	},
+	}
 }
 
 func splitName(name string) (string, string, error) {

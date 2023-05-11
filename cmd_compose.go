@@ -1,4 +1,4 @@
-package compose
+package main
 
 import (
 	"context"
@@ -15,7 +15,7 @@ import (
 	"github.com/altipla-consulting/wave/internal/query"
 )
 
-var Cmd = &cobra.Command{
+var cmdCompose = &cobra.Command{
 	Use:     "compose",
 	Short:   "Deploy with Docker Compose through SSH to a remote machine.",
 	Example: "wave compose foo-1",
@@ -24,10 +24,10 @@ var Cmd = &cobra.Command{
 
 func init() {
 	var flagSentry string
-	Cmd.Flags().StringVar(&flagSentry, "sentry", "", "Name of the sentry project to configure.")
-	Cmd.MarkPersistentFlagRequired("sentry")
+	cmdCompose.Flags().StringVar(&flagSentry, "sentry", "", "Name of the sentry project to configure.")
+	cmdCompose.MarkPersistentFlagRequired("sentry")
 
-	Cmd.RunE = func(cmd *cobra.Command, args []string) error {
+	cmdCompose.RunE = func(cmd *cobra.Command, args []string) error {
 		logger := log.WithField("machine", args[0])
 		logger.WithField("version", query.Version()).Info("Deploy to remote machine with Docker Compose")
 
@@ -41,9 +41,9 @@ func init() {
 		}
 
 		org := sentry.Organization{
-			Slug: apiString("altipla-consulting"),
+			Slug: sentryAPIString("altipla-consulting"),
 		}
-		keys, err := client.GetClientKeys(org, sentry.Project{Slug: apiString(flagSentry)})
+		keys, err := client.GetClientKeys(org, sentry.Project{Slug: sentryAPIString(flagSentry)})
 		if err != nil {
 			return errors.Trace(err)
 		}
@@ -110,10 +110,6 @@ func prepareComposeCommand(cmd *exec.Cmd, machine, sentryDSN string) {
 	cmd.Env = append(cmd.Env, "DOCKER_HOST=ssh://jenkins@"+machine)
 	cmd.Env = append(cmd.Env, "VERSION="+query.Version())
 	cmd.Env = append(cmd.Env, "SENTRY_DSN="+sentryDSN)
-}
-
-func apiString(s string) *string {
-	return &s
 }
 
 func cleanHost(ctx context.Context, logger *log.Entry, host string) error {

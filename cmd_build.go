@@ -1,4 +1,4 @@
-package build
+package main
 
 import (
 	"os"
@@ -11,7 +11,7 @@ import (
 	"github.com/altipla-consulting/wave/internal/query"
 )
 
-var Cmd = &cobra.Command{
+var cmdBuild = &cobra.Command{
 	Use:     "build",
 	Short:   "Build a container from a predefined folder structure.",
 	Example: "wave build foo",
@@ -20,10 +20,10 @@ var Cmd = &cobra.Command{
 
 func init() {
 	var flagProject, flagSource string
-	Cmd.PersistentFlags().StringVar(&flagProject, "project", "", "Google Cloud project where the container will be stored. Defaults to the GOOGLE_PROJECT environment variable.")
-	Cmd.PersistentFlags().StringVar(&flagSource, "source", "", "Source folder. Defaults to a folder with the name of the app.")
+	cmdBuild.PersistentFlags().StringVar(&flagProject, "project", "", "Google Cloud project where the container will be stored. Defaults to the GOOGLE_PROJECT environment variable.")
+	cmdBuild.PersistentFlags().StringVar(&flagSource, "source", "", "Source folder. Defaults to a folder with the name of the app.")
 
-	Cmd.RunE = func(command *cobra.Command, args []string) error {
+	cmdBuild.RunE = func(command *cobra.Command, args []string) error {
 		app := args[0]
 
 		if flagProject == "" {

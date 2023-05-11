@@ -1,4 +1,4 @@
-package pages
+package main
 
 import (
 	"fmt"
@@ -13,26 +13,22 @@ import (
 	"github.com/altipla-consulting/wave/internal/gerrit"
 )
 
-var (
-	flagAccount string
-	flagProject string
-	flagSource  string
-)
-
-func init() {
-	Cmd.Flags().StringVar(&flagAccount, "account", "", "Cloudflare account ID.")
-	Cmd.Flags().StringVar(&flagProject, "project", "", "Cloudflare Pages project where the files will be deployed to.")
-	Cmd.Flags().StringVar(&flagSource, "source", "dist", "Source folder. Defaults to a folder named dist.")
-	Cmd.MarkFlagRequired("account")
-	Cmd.MarkFlagRequired("project")
-}
-
-var Cmd = &cobra.Command{
+var cmdPages = &cobra.Command{
 	Use:     "pages",
 	Short:   "Deploy a Cloudflare Pages project.",
 	Example: "wave pages",
 	Args:    cobra.NoArgs,
-	RunE: func(command *cobra.Command, args []string) error {
+}
+
+func init() {
+	var flagAccount, flagProject, flagSource string
+	cmdPages.Flags().StringVar(&flagAccount, "account", "", "Cloudflare account ID.")
+	cmdPages.Flags().StringVar(&flagProject, "project", "", "Cloudflare Pages project where the files will be deployed to.")
+	cmdPages.Flags().StringVar(&flagSource, "source", "dist", "Source folder. Defaults to a folder named dist.")
+	cmdPages.MarkFlagRequired("account")
+	cmdPages.MarkFlagRequired("project")
+
+	cmdPages.RunE = func(command *cobra.Command, args []string) error {
 		logger := log.WithFields(log.Fields{
 			"branch": gerrit.Descriptor(),
 		})
@@ -61,5 +57,5 @@ var Cmd = &cobra.Command{
 		}
 
 		return nil
-	},
+	}
 }
