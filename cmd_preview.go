@@ -32,7 +32,7 @@ func init() {
 	cmdPreview.PersistentFlags().StringSliceVar(&flagCloudflare, "cloudflare", nil, "Cloudflare applications. Format: `local-name:cloudflare-name`.")
 
 	cmdPreview.RunE = func(command *cobra.Command, args []string) error {
-		if flagProject == "" {
+		if flagProject == "" && len(flagCloudRun) > 0 {
 			flagProject = env.GoogleProject()
 		}
 
