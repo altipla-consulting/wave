@@ -20,6 +20,7 @@ func init() {
 		cmdbase.WithUpdate("github.com/altipla-consulting/wave"))
 	cmdRoot.AddCommand(cmdAR)
 	cmdRoot.AddCommand(cmdBuild)
+	cmdRoot.AddCommand(cmdCompose)
 	cmdRoot.AddCommand(cmdDeploy)
 	cmdRoot.AddCommand(cmdJob)
 	cmdRoot.AddCommand(cmdKubernetes)
