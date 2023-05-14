@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/altipla-consulting/cmdbase v0.2.5
+	github.com/altipla-consulting/env v0.2.0
 	github.com/altipla-consulting/errors v1.2.5
 	github.com/atlassian/go-sentry-api v0.0.0-20230425171514-3bb2fb7a76d0
 	github.com/google/go-jsonnet v0.20.0
@@ -13,7 +14,6 @@ require (
 )
 
 require (
-	github.com/altipla-consulting/env v0.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/getsentry/sentry-go v0.21.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
