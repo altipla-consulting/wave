@@ -29,7 +29,7 @@ var cmdDeploy = &cobra.Command{
 func init() {
 	const maxDeployAttempts = 2
 
-	var flagProject, flagRegion string
+	var flagProject, flagRegion, flagRepo string
 	var flagMemory string
 	var flagServiceAccount string
 	var flagSentry string
@@ -40,6 +40,8 @@ func init() {
 	var flagCloudSQL []string
 	var flagConcurrency int64
 	cmdDeploy.Flags().StringVar(&flagProject, "project", "", "Google Cloud project where the container will be stored. Defaults to the GOOGLE_PROJECT environment variable.")
+	cmdDeploy.Flags().StringVar(&flagRegion, "region", "europe-west1", "Region where resources will be hosted.")
+	cmdDeploy.Flags().StringVar(&flagRepo, "repo", "", "Artifact Registry repository name where the container is stored.")
 	cmdDeploy.Flags().StringVar(&flagMemory, "memory", "", "Memory available inside the Cloud Run application. Default: 256Mi.")
 	cmdDeploy.Flags().StringVar(&flagServiceAccount, "service-account", "", "Service account. Defaults to one with the name of the application.")
 	cmdDeploy.Flags().StringVar(&flagSentry, "sentry", "", "Name of the sentry project to configure.")
@@ -48,7 +50,6 @@ func init() {
 	cmdDeploy.Flags().StringSliceVar(&flagEnv, "env", nil, "Custom environment variables to define as `KEY=value` pairs.")
 	cmdDeploy.Flags().StringVar(&flagTag, "tag", "", "Name of the revision included in the URL. Defaults to the Gerrit change and patchset.")
 	cmdDeploy.Flags().BoolVar(&flagAlwaysOn, "always-on", false, "App will always have CPU even if it's in the background without requests.")
-	cmdDeploy.Flags().StringVar(&flagRegion, "region", "europe-west1", "Region where resources will be hosted.")
 	cmdDeploy.Flags().StringSliceVar(&flagCloudSQL, "cloudsql", nil, "CloudSQL instances to connect to. Only the name.")
 	cmdDeploy.Flags().Int64Var(&flagConcurrency, "concurrency", 50, "Maximum number of concurrent requests.")
 	cmdDeploy.MarkFlagRequired("sentry")
@@ -97,10 +98,15 @@ func init() {
 		}
 		env = append(env, flagEnv...)
 
+		image := "eu.gcr.io/" + flagProject + "/" + app + ":" + version
+		if flagRepo != "" {
+			image = fmt.Sprintf("europe-west1-docker.pkg.dev/%s/%s/%s:%s", flagProject, flagRepo, app, version)
+		}
+
 		gcloud := []string{
 			"beta", "run", "deploy",
 			app,
-			"--image", "eu.gcr.io/" + flagProject + "/" + app + ":" + version,
+			"--image", image,
 			"--region", flagRegion,
 			"--platform", "managed",
 			"--concurrency", fmt.Sprintf("%d", flagConcurrency),

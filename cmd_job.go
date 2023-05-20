@@ -33,14 +33,14 @@ func init() {
 	var flagMemory, flagServiceAccount, flagSentry string
 	var flagEnv, flagEnvSecret, flagCloudSQL []string
 	cmdJob.Flags().StringVar(&flagProject, "project", "", "Google Cloud project where the container will be stored. Defaults to the GOOGLE_PROJECT environment variable.")
+	cmdJob.Flags().StringVar(&flagRegion, "region", "europe-west1", "Region where resources will be hosted.")
+	cmdJob.Flags().StringVar(&flagRepo, "repo", "", "Artifact Registry repository name where the container is stored.")
 	cmdJob.Flags().StringVar(&flagMemory, "memory", "", "Memory available inside the Cloud Run application. Default: 256Mi.")
 	cmdJob.Flags().StringVar(&flagServiceAccount, "service-account", "", "Service account. Defaults to one with the name of the application.")
 	cmdJob.Flags().StringVar(&flagSentry, "sentry", "", "Name of the sentry project to configure.")
 	cmdJob.Flags().StringSliceVar(&flagEnvSecret, "env-secret", nil, "Secrets to mount as environment variables.")
 	cmdJob.Flags().StringSliceVar(&flagEnv, "env", nil, "Custom environment variables to define as `KEY=value` pairs.")
-	cmdJob.Flags().StringVar(&flagRegion, "region", "europe-west1", "Region where resources will be hosted.")
 	cmdJob.Flags().StringSliceVar(&flagCloudSQL, "cloudsql", nil, "CloudSQL instances to connect to. Only the name.")
-	cmdJob.Flags().StringVar(&flagRepo, "repo", "", "Artifact Registry repository name where the container is stored.")
 	cmdJob.MarkFlagRequired("sentry")
 	cmdJob.MarkFlagRequired("repo")
 
