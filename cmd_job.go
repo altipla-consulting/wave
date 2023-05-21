@@ -81,6 +81,7 @@ func init() {
 
 		env := []string{
 			"SENTRY_DSN=" + keys[0].DSN.Public,
+			"VERSION=" + version,
 		}
 		env = append(env, flagEnv...)
 
