@@ -182,7 +182,7 @@ func init() {
 				"run", "services", "update-traffic",
 				app,
 				"--project", flagProject,
-				"--region", "europe-west1",
+				"--region", flagRegion,
 				"--to-latest",
 			)
 			traffic.Stdout = os.Stdout
