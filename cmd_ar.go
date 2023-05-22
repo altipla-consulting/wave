@@ -67,7 +67,7 @@ func init() {
 
 		docker = append(docker, ".") // build context
 
-		build := exec.Command(docker[0], docker[1:]...)
+		build := exec.Command("docker", docker...)
 		build.Stdout = os.Stdout
 		build.Stderr = os.Stderr
 		if err := build.Run(); err != nil {
