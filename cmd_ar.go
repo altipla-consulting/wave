@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/altipla-consulting/errors"
 	log "github.com/sirupsen/logrus"
@@ -46,15 +47,27 @@ func init() {
 			source = flagSource
 		}
 		image := fmt.Sprintf("europe-west1-docker.pkg.dev/%s/%s/%s", flagProject, flagRepo, app)
-		build := exec.Command(
-			"docker",
+
+		docker := []string{
 			"build",
-			"--cache-from", image+":latest",
-			"-f", source+"/Dockerfile",
-			"-t", image+":latest",
-			"-t", image+":"+version,
-			".",
-		)
+			"--cache-from", image + ":latest",
+			"-f", source + "/Dockerfile",
+			"-t", image + ":latest",
+			"-t", image + ":" + version,
+		}
+
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return errors.Trace(err)
+		}
+		if _, err := os.Stat(filepath.Join(home, ".npmrc")); err != nil && !os.IsNotExist(err) {
+		} else if err == nil {
+			docker = append(docker, "--secret", "id=npmrc,src="+filepath.Join(home, ".npmrc"))
+		}
+
+		docker = append(docker, ".") // build context
+
+		build := exec.Command(docker[0], docker[1:]...)
 		build.Stdout = os.Stdout
 		build.Stderr = os.Stderr
 		if err := build.Run(); err != nil {
