@@ -88,6 +88,7 @@ func init() {
 		gcloud := []string{
 			"beta", "run", "jobs", "deploy",
 			app,
+			"--project", flagProject,
 			"--image", fmt.Sprintf("europe-west1-docker.pkg.dev/%s/%s/%s:%s", flagProject, flagRepo, app, version),
 			"--region", flagRegion,
 			"--task-timeout", "10m",
