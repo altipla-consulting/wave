@@ -24,8 +24,9 @@ var cmdCompose = &cobra.Command{
 }
 
 func init() {
-	var flagSentry string
+	var flagSentry, flagFile string
 	cmdCompose.Flags().StringVar(&flagSentry, "sentry", "", "Name of the sentry project to configure.")
+	cmdCompose.Flags().StringVar(&flagFile, "file", "docker-compose.prod.yml", "Path to the Docker Compose file to deploy.")
 	cmdCompose.MarkPersistentFlagRequired("sentry")
 
 	cmdCompose.RunE = func(cmd *cobra.Command, args []string) error {
@@ -83,14 +84,14 @@ func init() {
 		}
 
 		logger.Info("Building remote containers")
-		build := exec.CommandContext(cmd.Context(), "docker", "compose", "-f", "docker-compose.prod.yml", "build")
+		build := exec.CommandContext(cmd.Context(), "docker", "compose", "-f", flagFile, "build")
 		prepareComposeCommand(build, args[0], keys[0].DSN.Public)
 		if err := build.Run(); err != nil {
 			return errors.Trace(err)
 		}
 
 		logger.Info("Sending container changes to the remote machine")
-		up := exec.CommandContext(cmd.Context(), "docker", "compose", "-f", "docker-compose.prod.yml", "up", "-d")
+		up := exec.CommandContext(cmd.Context(), "docker", "compose", "-f", flagFile, "up", "-d")
 		prepareComposeCommand(up, args[0], keys[0].DSN.Public)
 		if err := up.Run(); err != nil {
 			return errors.Trace(err)
