@@ -25,6 +25,7 @@ func init() {
 	cmdRoot.AddCommand(cmdECR)
 	cmdRoot.AddCommand(cmdJob)
 	cmdRoot.AddCommand(cmdKubernetes)
+	cmdRoot.AddCommand(cmdLightsail)
 	cmdRoot.AddCommand(cmdNetlify)
 	cmdRoot.AddCommand(cmdPages)
 	cmdRoot.AddCommand(cmdPreview)

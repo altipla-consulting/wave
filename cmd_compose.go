@@ -27,7 +27,7 @@ func init() {
 	var flagSentry, flagFile string
 	cmdCompose.Flags().StringVar(&flagSentry, "sentry", "", "Name of the sentry project to configure.")
 	cmdCompose.Flags().StringVar(&flagFile, "file", "docker-compose.prod.yml", "Path to the Docker Compose file to deploy.")
-	cmdCompose.MarkPersistentFlagRequired("sentry")
+	cmdCompose.MarkFlagRequired("sentry")
 
 	cmdCompose.RunE = func(cmd *cobra.Command, args []string) error {
 		logger := log.WithField("machine", args[0])
