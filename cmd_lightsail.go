@@ -96,6 +96,7 @@ func init() {
 			"create-container-service-deployment",
 			"--service-name", config.ServiceName,
 			"--cli-input-json", "file://" + tmpFile.Name(),
+			"--region", flagRegion,
 			"--no-cli-pager",
 		}
 		createCmd := exec.CommandContext(cmd.Context(), create[0], create[1:]...)
