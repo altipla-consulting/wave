@@ -34,10 +34,10 @@ func init() {
 		})
 		logger.Info("Build app")
 
-		logger.Info("Publish to Cloudflare Pages")
+		logger.Info("Deploy to Cloudflare Pages")
 		wrangler := []string{
 			"wrangler",
-			"pages", "publish",
+			"pages", "deploy",
 			"--project-name", flagProject,
 		}
 		if gerrit.IsPreview() {
@@ -47,12 +47,12 @@ func init() {
 		}
 		wrangler = append(wrangler, flagSource)
 		log.Debug(strings.Join(wrangler, " "))
-		publish := exec.Command(wrangler[0], wrangler[1:]...)
-		publish.Stdout = os.Stdout
-		publish.Stderr = os.Stderr
-		publish.Env = os.Environ()
-		publish.Env = append(publish.Env, fmt.Sprintf("CLOUDFLARE_ACCOUNT_ID=%s", flagAccount))
-		if err := publish.Run(); err != nil {
+		deploy := exec.Command(wrangler[0], wrangler[1:]...)
+		deploy.Stdout = os.Stdout
+		deploy.Stderr = os.Stderr
+		deploy.Env = os.Environ()
+		deploy.Env = append(deploy.Env, fmt.Sprintf("CLOUDFLARE_ACCOUNT_ID=%s", flagAccount))
+		if err := deploy.Run(); err != nil {
 			return errors.Trace(err)
 		}
 
