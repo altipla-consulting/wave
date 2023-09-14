@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/altipla-consulting/cmdbase"
+
+	"github.com/altipla-consulting/wave/internal/debug"
 )
 
 func main() {
@@ -29,4 +31,5 @@ func init() {
 	cmdRoot.AddCommand(cmdNetlify)
 	cmdRoot.AddCommand(cmdPages)
 	cmdRoot.AddCommand(cmdPreview)
+	cmdRoot.AddCommand(debug.Cmd)
 }
