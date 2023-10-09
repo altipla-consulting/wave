@@ -33,7 +33,7 @@ func init() {
 
 		logger := log.WithFields(log.Fields{
 			"name":    app,
-			"version": query.Version(),
+			"version": query.Version(command.Context()),
 		})
 
 		source := app
@@ -48,7 +48,7 @@ func init() {
 			"--cache-from", "eu.gcr.io/"+flagProject+"/"+app+":latest",
 			"-f", source+"/Dockerfile",
 			"-t", "eu.gcr.io/"+flagProject+"/"+app+":latest",
-			"-t", "eu.gcr.io/"+flagProject+"/"+app+":"+query.Version(),
+			"-t", "eu.gcr.io/"+flagProject+"/"+app+":"+query.Version(command.Context()),
 			".",
 		)
 		build.Stdout = os.Stdout
@@ -65,7 +65,7 @@ func init() {
 			return errors.Trace(err)
 		}
 
-		push = exec.Command("docker", "push", "eu.gcr.io/"+flagProject+"/"+app+":"+query.Version())
+		push = exec.Command("docker", "push", "eu.gcr.io/"+flagProject+"/"+app+":"+query.Version(command.Context()))
 		push.Stdout = os.Stdout
 		push.Stderr = os.Stderr
 		if err := push.Run(); err != nil {

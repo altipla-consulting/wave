@@ -1,16 +1,25 @@
 package query
 
 import (
+	"bytes"
+	"context"
 	"os"
+	"os/exec"
 	"path"
 	"time"
 
 	"github.com/altipla-consulting/wave/internal/gerrit"
 )
 
-func Version() string {
+func Version(ctx context.Context) string {
+	var version string
 	// Default tag for previews and PRs.
-	version := time.Now().Format("20060102") + "." + os.Getenv("BUILD_NUMBER")
+	lastHash := GetLastHash(ctx)
+	if lastHash == "" {
+		version = time.Now().Format("20060102") + "." + os.Getenv("BUILD_NUMBER")
+	}
+	version = lastHash[:8]
+
 	if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" {
 		version += ".preview"
 	}
@@ -52,4 +61,15 @@ func IsRelease() bool {
 
 func IsGitHubActions() bool {
 	return os.Getenv("GITHUB_ACTIONS") == "true"
+}
+
+func GetLastHash(ctx context.Context) string {
+	cmd := exec.CommandContext(ctx, "git", "rev-parse", "HEAD")
+	bytes := &bytes.Buffer{}
+	cmd.Stdout = bytes
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		return ""
+	}
+	return bytes.String()
 }
