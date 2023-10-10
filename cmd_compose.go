@@ -92,7 +92,7 @@ func init() {
 
 		logger.Info("Sending container changes to the remote machine")
 		up := exec.CommandContext(cmd.Context(), "docker", "compose", "-f", flagFile, "up", "-d")
-		prepareComposeCommand(cmd.Context(), build, args[0], keys[0].DSN.Public)
+		prepareComposeCommand(cmd.Context(), up, args[0], keys[0].DSN.Public)
 		if err := up.Run(); err != nil {
 			return errors.Trace(err)
 		}
