@@ -14,7 +14,7 @@ import (
 func Version(ctx context.Context) string {
 	var version string
 	// Default tag for previews and PRs.
-	if lastHash := lastHash(ctx); lastHash == "" {
+	if lastHash := LastHash(ctx); lastHash == "" {
 		version = time.Now().Format("20060102") + "." + os.Getenv("BUILD_NUMBER")
 	} else {
 		version = lastHash[:8]
@@ -63,7 +63,7 @@ func IsGitHubActions() bool {
 	return os.Getenv("GITHUB_ACTIONS") == "true"
 }
 
-func lastHash(ctx context.Context) string {
+func LastHash(ctx context.Context) string {
 	command := exec.CommandContext(ctx, "git", "rev-parse", "HEAD")
 	hash := &bytes.Buffer{}
 	command.Stdout = hash
