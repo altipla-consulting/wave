@@ -9,7 +9,7 @@ import (
 
 var cmdVersion = &cobra.Command{
 	Use:     "version",
-	Short:   "Debug the version that is taken from a project.",
+	Short:   "Debug the deployment version.",
 	Example: "wave debug version example",
 	Args:    cobra.ExactArgs(0),
 }
