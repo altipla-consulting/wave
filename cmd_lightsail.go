@@ -44,13 +44,13 @@ func init() {
 		}
 
 		logger := log.WithField("machine", config.ServiceName)
-		logger.WithField("version", query.Version()).Info("Deploy to Lightsail Containers")
+		logger.WithField("version", query.Version(cmd.Context())).Info("Deploy to Lightsail Containers")
 
 		var mapErr error
 		var mapFn = func(placeholder string) string {
 			switch {
 			case placeholder == "VERSION":
-				return query.Version()
+				return query.Version(cmd.Context())
 
 			case placeholder == "REPO":
 				return flagRepo

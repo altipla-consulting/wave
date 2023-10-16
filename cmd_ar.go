@@ -35,7 +35,7 @@ func init() {
 			flagProject = env.GoogleProject()
 		}
 
-		version := query.Version()
+		version := query.Version(command.Context())
 		logger := log.WithFields(log.Fields{
 			"name":    app,
 			"version": version,

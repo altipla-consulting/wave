@@ -84,7 +84,7 @@ func init() {
 			return errors.Trace(err)
 		}
 
-		version := query.Version()
+		version := query.Version(command.Context())
 
 		log.WithFields(log.Fields{
 			"name":            app,

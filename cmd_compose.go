@@ -31,7 +31,7 @@ func init() {
 
 	cmdCompose.RunE = func(cmd *cobra.Command, args []string) error {
 		logger := log.WithField("machine", args[0])
-		logger.WithField("version", query.Version()).Info("Deploy to remote machine with Docker Compose")
+		logger.WithField("version", query.Version(cmd.Context())).Info("Deploy to remote machine with Docker Compose")
 
 		client, err := sentry.NewClient(env.SentryAuthToken(), nil, nil)
 		if err != nil {
@@ -85,14 +85,14 @@ func init() {
 
 		logger.Info("Building remote containers")
 		build := exec.CommandContext(cmd.Context(), "docker", "compose", "-f", flagFile, "build")
-		prepareComposeCommand(build, args[0], keys[0].DSN.Public)
+		prepareComposeCommand(cmd.Context(), build, args[0], keys[0].DSN.Public)
 		if err := build.Run(); err != nil {
 			return errors.Trace(err)
 		}
 
 		logger.Info("Sending container changes to the remote machine")
 		up := exec.CommandContext(cmd.Context(), "docker", "compose", "-f", flagFile, "up", "-d")
-		prepareComposeCommand(up, args[0], keys[0].DSN.Public)
+		prepareComposeCommand(cmd.Context(), up, args[0], keys[0].DSN.Public)
 		if err := up.Run(); err != nil {
 			return errors.Trace(err)
 		}
@@ -101,12 +101,12 @@ func init() {
 	}
 }
 
-func prepareComposeCommand(cmd *exec.Cmd, machine, sentryDSN string) {
+func prepareComposeCommand(ctx context.Context, cmd *exec.Cmd, machine, sentryDSN string) {
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, "DOCKER_HOST=ssh://jenkins@"+machine)
-	cmd.Env = append(cmd.Env, "VERSION="+query.Version())
+	cmd.Env = append(cmd.Env, "VERSION="+query.Version(ctx))
 	cmd.Env = append(cmd.Env, "SENTRY_DSN="+sentryDSN)
 }
 

@@ -16,7 +16,7 @@ var cmdVersion = &cobra.Command{
 
 func init() {
 	cmdVersion.RunE = func(cmd *cobra.Command, args []string) error {
-		fmt.Println(query.Version())
+		fmt.Println(query.Version(cmd.Context()))
 		return nil
 	}
 }

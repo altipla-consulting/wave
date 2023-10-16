@@ -1,18 +1,27 @@
 package query
 
 import (
+	"bytes"
+	"context"
 	"os"
+	"os/exec"
 	"path"
 	"time"
 
 	"github.com/altipla-consulting/wave/internal/gerrit"
 )
 
-func Version() string {
+func Version(ctx context.Context) string {
+	var version string
 	// Default tag for previews and PRs.
-	version := time.Now().Format("20060102") + "." + os.Getenv("BUILD_NUMBER")
+	if lastHash := lastHash(ctx); lastHash == "" {
+		version = time.Now().Format("20060102") + "." + os.Getenv("BUILD_NUMBER")
+	} else {
+		version = lastHash
+	}
+
 	if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" {
-		version += ".preview"
+		version = time.Now().Format("20060102") + "." + os.Getenv("BUILD_NUMBER") + ".preview"
 	}
 
 	// GitHub releases.
@@ -52,4 +61,15 @@ func IsRelease() bool {
 
 func IsGitHubActions() bool {
 	return os.Getenv("GITHUB_ACTIONS") == "true"
+}
+
+func lastHash(ctx context.Context) string {
+	command := exec.CommandContext(ctx, "git", "rev-parse", "HEAD")
+	hash := &bytes.Buffer{}
+	command.Stdout = hash
+	command.Stderr = os.Stderr
+	if err := command.Run(); err != nil {
+		return ""
+	}
+	return hash.String()[0:7]
 }

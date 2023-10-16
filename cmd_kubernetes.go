@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -59,7 +60,7 @@ func init() {
 			Env:         flagEnv,
 			Filter:      flagFilter,
 		}
-		result, err := runScript(args[0], content, opts)
+		result, err := runScript(command.Context(), args[0], content, opts)
 		if err != nil {
 			return errors.Trace(err)
 		}
@@ -71,7 +72,7 @@ func init() {
 
 		log.WithFields(log.Fields{
 			"filename": args[0],
-			"version":  query.Version(),
+			"version":  query.Version(command.Context()),
 		}).Info("Deploy generated file")
 
 		apply := exec.Command("kubectl", "apply", "-f", "-")
@@ -93,7 +94,7 @@ type RunOptions struct {
 	Filter      string
 }
 
-func runScript(filename string, content []byte, opts RunOptions) (*bytes.Buffer, error) {
+func runScript(ctx context.Context, filename string, content []byte, opts RunOptions) (*bytes.Buffer, error) {
 	dir, err := ioutil.TempDir("", "wave")
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -111,7 +112,7 @@ func runScript(filename string, content []byte, opts RunOptions) (*bytes.Buffer,
 		vm.NativeFunction(f)
 	}
 
-	vm.ExtVar("version", query.Version())
+	vm.ExtVar("version", query.Version(ctx))
 
 	for _, v := range opts.Env {
 		parts := strings.Split(v, "=")
