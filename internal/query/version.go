@@ -13,15 +13,16 @@ import (
 
 func Version(ctx context.Context) string {
 	var version string
+	date := time.Now().Format("20060102") + "." + os.Getenv("BUILD_NUMBER")
 	// Default tag for previews and PRs.
 	if lastHash := lastHash(ctx); lastHash == "" {
-		version = time.Now().Format("20060102") + "." + os.Getenv("BUILD_NUMBER")
+		version = date
 	} else {
 		version = lastHash
 	}
 
 	if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" {
-		version = time.Now().Format("20060102") + "." + os.Getenv("BUILD_NUMBER") + ".preview"
+		version = date + ".preview"
 	}
 
 	// GitHub releases.
@@ -65,8 +66,8 @@ func IsGitHubActions() bool {
 
 func lastHash(ctx context.Context) string {
 	command := exec.CommandContext(ctx, "git", "rev-parse", "HEAD")
-	hash := &bytes.Buffer{}
-	command.Stdout = hash
+	var hash bytes.Buffer
+	command.Stdout = &hash
 	command.Stderr = os.Stderr
 	if err := command.Run(); err != nil {
 		return ""
