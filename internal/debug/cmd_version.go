@@ -3,8 +3,9 @@ package debug
 import (
 	"fmt"
 
-	"github.com/altipla-consulting/wave/internal/query"
 	"github.com/spf13/cobra"
+
+	"github.com/altipla-consulting/wave/internal/query"
 )
 
 var cmdVersion = &cobra.Command{

@@ -12,35 +12,32 @@ import (
 )
 
 func Version(ctx context.Context) string {
-	var version string
-	date := time.Now().Format("20060102") + "." + os.Getenv("BUILD_NUMBER")
-	// Default tag for previews and PRs.
-	if lastHash := lastHash(ctx); lastHash == "" {
-		version = date
-	} else {
-		version = lastHash
-	}
-
-	if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" {
-		version = date + ".preview"
-	}
-
-	// GitHub releases.
-	if ref := os.Getenv("GITHUB_REF"); ref != "" {
-		version = path.Base(ref)
+	// Custom override.
+	if ref := os.Getenv("WAVE_VERSION"); ref != "" {
+		return ref
 	}
 
 	// Gerrit tags.
 	if ref := os.Getenv("GERRIT_REFNAME"); ref != "" {
-		version = path.Base(ref)
+		return path.Base(ref)
 	}
 
-	// Custom override.
-	if ref := os.Getenv("WAVE_VERSION"); ref != "" {
-		version = ref
+	// GitHub releases.
+	if ref := os.Getenv("GITHUB_REF"); ref != "" {
+		return path.Base(ref)
 	}
 
-	return version
+	// Default tag for previews and PRs.
+	if os.Getenv("BUILD_NUMBER") != "" {
+		version := time.Now().Format("20060102") + "." + os.Getenv("BUILD_NUMBER")
+		if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" {
+			version += ".preview"
+		}
+		return version
+	}
+
+	// Last strategy is to use the last commit hash.
+	return lastHash(ctx)
 }
 
 func VersionHostname(override string) string {
