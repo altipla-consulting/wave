@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/altipla-consulting/errors"
 	"github.com/atlassian/go-sentry-api"
@@ -27,24 +28,10 @@ func init() {
 	var flagSentry, flagFile string
 	cmdCompose.Flags().StringVar(&flagSentry, "sentry", "", "Name of the sentry project to configure.")
 	cmdCompose.Flags().StringVar(&flagFile, "file", "docker-compose.prod.yml", "Path to the Docker Compose file to deploy.")
-	cmdCompose.MarkFlagRequired("sentry")
 
 	cmdCompose.RunE = func(cmd *cobra.Command, args []string) error {
 		logger := log.WithField("machine", args[0])
 		logger.WithField("version", query.Version(cmd.Context())).Info("Deploy to remote machine with Docker Compose")
-
-		client, err := sentry.NewClient(env.SentryAuthToken(), nil, nil)
-		if err != nil {
-			return errors.Trace(err)
-		}
-
-		org := sentry.Organization{
-			Slug: sentryAPIString("altipla-consulting"),
-		}
-		keys, err := client.GetClientKeys(org, sentry.Project{Slug: sentryAPIString(flagSentry)})
-		if err != nil {
-			return errors.Trace(err)
-		}
 
 		logger.Info("Downloading SSH key from the remote machine")
 		home, err := os.UserHomeDir()
@@ -83,31 +70,51 @@ func init() {
 			return errors.Trace(err)
 		}
 
+		content, err := os.ReadFile(flagFile)
+		if err != nil {
+			return errors.Trace(err)
+		}
+		var mapErr error
+		var mapFn = func(placeholder string) string {
+			val, err := replaceEnv(cmd.Context(), flagSentry, placeholder)
+			if err != nil {
+				mapErr = errors.Trace(err)
+				return "[ERROR]"
+			}
+			return val
+		}
+		content = []byte(os.Expand(string(content), mapFn))
+		if mapErr != nil {
+			return errors.Trace(mapErr)
+		}
+
+		tmpFile := filepath.Join(filepath.Dir(flagFile), "docker-compose.prod-tmpl.yml")
+		if err := os.WriteFile(tmpFile, content, 0600); err != nil {
+			return errors.Trace(err)
+		}
+
 		logger.Info("Building remote containers")
 		build := exec.CommandContext(cmd.Context(), "docker", "compose", "-f", flagFile, "build")
-		prepareComposeCommand(cmd.Context(), build, args[0], keys[0].DSN.Public)
+		build.Stderr = os.Stderr
+		build.Stdout = os.Stdout
+		build.Env = os.Environ()
+		build.Env = append(build.Env, "DOCKER_HOST=ssh://jenkins@"+args[0])
 		if err := build.Run(); err != nil {
 			return errors.Trace(err)
 		}
 
 		logger.Info("Sending container changes to the remote machine")
-		up := exec.CommandContext(cmd.Context(), "docker", "compose", "-f", flagFile, "up", "-d")
-		prepareComposeCommand(cmd.Context(), up, args[0], keys[0].DSN.Public)
+		up := exec.CommandContext(cmd.Context(), "docker", "compose", "-f", tmpFile, "up", "-d")
+		up.Stderr = os.Stderr
+		up.Stdout = os.Stdout
+		up.Env = os.Environ()
+		up.Env = append(up.Env, "DOCKER_HOST=ssh://jenkins@"+args[0])
 		if err := up.Run(); err != nil {
 			return errors.Trace(err)
 		}
 
 		return nil
 	}
-}
-
-func prepareComposeCommand(ctx context.Context, cmd *exec.Cmd, machine, sentryDSN string) {
-	cmd.Stderr = os.Stderr
-	cmd.Stdout = os.Stdout
-	cmd.Env = os.Environ()
-	cmd.Env = append(cmd.Env, "DOCKER_HOST=ssh://jenkins@"+machine)
-	cmd.Env = append(cmd.Env, "VERSION="+query.Version(ctx))
-	cmd.Env = append(cmd.Env, "SENTRY_DSN="+sentryDSN)
 }
 
 func cleanHost(ctx context.Context, logger *log.Entry, host string) error {
@@ -131,4 +138,49 @@ func cleanHost(ctx context.Context, logger *log.Entry, host string) error {
 	}
 
 	return nil
+}
+
+func replaceEnv(ctx context.Context, flagSentry, placeholder string) (string, error) {
+	switch {
+	case placeholder == "VERSION":
+		return query.Version(ctx), nil
+
+	case placeholder == "SENTRY_DSN":
+		if flagSentry == "" {
+			return "", errors.Errorf("missing --sentry flag")
+		}
+		client, err := sentry.NewClient(env.SentryAuthToken(), nil, nil)
+		if err != nil {
+			return "", errors.Trace(err)
+		}
+		org := sentry.Organization{
+			Slug: sentryAPIString("altipla-consulting"),
+		}
+		keys, err := client.GetClientKeys(org, sentry.Project{Slug: sentryAPIString(flagSentry)})
+		if err != nil {
+			return "", errors.Trace(err)
+		}
+		return keys[0].DSN.Public, nil
+
+	case strings.HasPrefix(placeholder, "SENTRY_DSN("):
+		client, err := sentry.NewClient(env.SentryAuthToken(), nil, nil)
+		if err != nil {
+			return "", errors.Trace(err)
+		}
+		project := strings.TrimSuffix(strings.TrimPrefix(placeholder, "SENTRY_DSN("), ")")
+		org := sentry.Organization{
+			Slug: sentryAPIString("altipla-consulting"),
+		}
+		keys, err := client.GetClientKeys(org, sentry.Project{Slug: sentryAPIString(project)})
+		if err != nil {
+			return "", errors.Trace(err)
+		}
+		return keys[0].DSN.Public, nil
+
+	case os.Getenv(placeholder) != "":
+		return os.Getenv(placeholder), nil
+
+	default:
+		return "", errors.Errorf("unknown environment expansion: %s", placeholder)
+	}
 }

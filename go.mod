@@ -8,6 +8,7 @@ require (
 	github.com/altipla-consulting/errors v1.2.5
 	github.com/atlassian/go-sentry-api v0.0.0-20230425171514-3bb2fb7a76d0
 	github.com/google/go-jsonnet v0.20.0
+	github.com/joho/godotenv v1.5.1
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.7.0
 	github.com/stretchr/testify v1.8.2

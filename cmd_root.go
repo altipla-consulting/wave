@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/altipla-consulting/cmdbase"
+	_ "github.com/joho/godotenv/autoload"
 
 	"github.com/altipla-consulting/wave/internal/debug"
 )
