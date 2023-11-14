@@ -94,7 +94,7 @@ func init() {
 		}
 
 		logger.Info("Building remote containers")
-		build := exec.CommandContext(cmd.Context(), "docker", "compose", "-f", flagFile, "build")
+		build := exec.CommandContext(cmd.Context(), "docker", "compose", "-f", tmpFile, "build")
 		build.Stderr = os.Stderr
 		build.Stdout = os.Stdout
 		build.Env = os.Environ()
