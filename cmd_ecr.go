@@ -31,7 +31,7 @@ func init() {
 	cmdECR.RunE = func(command *cobra.Command, args []string) error {
 		app := args[0]
 
-		version := query.Version()
+		version := query.Version(command.Context())
 		logger := log.WithFields(log.Fields{
 			"name":    app,
 			"version": version,

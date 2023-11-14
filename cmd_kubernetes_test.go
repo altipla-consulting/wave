@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -28,7 +29,7 @@ func TestScript(t *testing.T) {
 			},
 		},
 	}
-	buf, err := runScript("test", content, opts)
+	buf, err := runScript(context.Background(), "test", content, opts)
 	require.NoError(t, err)
 
 	fmt.Println(buf.String())

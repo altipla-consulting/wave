@@ -44,7 +44,7 @@ func init() {
 
 		log.WithFields(log.Fields{
 			"name":    site,
-			"version": query.Version(),
+			"version": query.Version(command.Context()),
 		}).Info("Deploy Netlify site")
 
 		netlify := []string{
