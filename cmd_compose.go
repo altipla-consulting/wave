@@ -92,6 +92,7 @@ func init() {
 		if err := os.WriteFile(tmpFile, content, 0600); err != nil {
 			return errors.Trace(err)
 		}
+		defer os.Remove(tmpFile)
 
 		logger.Info("Building remote containers")
 		build := exec.CommandContext(cmd.Context(), "docker", "compose", "-f", tmpFile, "build")
