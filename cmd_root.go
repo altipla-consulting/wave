@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/altipla-consulting/cmdbase"
+	"github.com/joho/godotenv"
 	_ "github.com/joho/godotenv/autoload"
 
 	"github.com/altipla-consulting/wave/internal/debug"
@@ -12,6 +13,8 @@ func main() {
 }
 
 func init() {
+	godotenv.Load(".env.production", ".env")
+
 	cmdRoot := cmdbase.CmdRoot(
 		"wave",
 		"Build and publish applications.",
