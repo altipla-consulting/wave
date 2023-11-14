@@ -1,9 +1,6 @@
 package main
 
 import (
-	"math/rand"
-	"time"
-
 	"github.com/altipla-consulting/cmdbase"
 	_ "github.com/joho/godotenv/autoload"
 
@@ -11,7 +8,6 @@ import (
 )
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
 	cmdbase.Main()
 }
 
