@@ -18,7 +18,7 @@ func Version(ctx context.Context) string {
 	}
 
 	// Gerrit tags.
-	if ref := os.Getenv("GERRIT_REFNAME"); ref != "" {
+	if ref := os.Getenv("GERRIT_REFNAME"); ref != "" && ref != "master" {
 		return path.Base(ref)
 	}
 
