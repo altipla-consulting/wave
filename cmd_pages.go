@@ -39,6 +39,7 @@ func init() {
 			"wrangler",
 			"pages", "deploy",
 			"--project-name", flagProject,
+			"--commit-dirty=true",
 		}
 		if gerrit.IsPreview() {
 			wrangler = append(wrangler, "--branch", gerrit.Descriptor())
