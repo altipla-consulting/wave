@@ -30,7 +30,7 @@ func init() {
 
 	cmdPages.RunE = func(command *cobra.Command, args []string) error {
 		logger := log.WithFields(log.Fields{
-			"branch": gerrit.Descriptor(),
+			"branch": gerrit.SimulatedBranch(),
 		})
 		logger.Info("Build app")
 
@@ -42,7 +42,7 @@ func init() {
 			"--commit-dirty=true",
 		}
 		if gerrit.IsPreview() {
-			wrangler = append(wrangler, "--branch", gerrit.Descriptor())
+			wrangler = append(wrangler, "--branch", gerrit.SimulatedBranch())
 		} else {
 			wrangler = append(wrangler, "--branch", "main")
 		}

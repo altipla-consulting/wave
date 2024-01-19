@@ -19,15 +19,15 @@ func PatchSet() string {
 	return os.Getenv("GERRIT_PATCHSET_NUMBER")
 }
 
-func Descriptor() string {
-	if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" && os.Getenv("GERRIT_EVENT_TYPE") != "ref-updated" {
+func SimulatedBranch() string {
+	if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" && os.Getenv("GERRIT_EVENT_TYPE") == "patchset-created" {
 		return "preview-" + ChangeNumber() + "-" + PatchSet()
 	}
 	return "master"
 }
 
 func IsPreview() bool {
-	return Descriptor() != "master"
+	return os.Getenv("GERRIT_EVENT_TYPE") == "patchset-created"
 }
 
 func CommitHash() string {

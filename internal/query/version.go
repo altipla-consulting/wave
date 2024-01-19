@@ -6,7 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"time"
+	"strings"
 
 	"github.com/altipla-consulting/wave/internal/gerrit"
 )
@@ -23,17 +23,16 @@ func Version(ctx context.Context) string {
 	}
 
 	// GitHub releases.
-	if ref := os.Getenv("GITHUB_REF"); ref != "" {
+	if ref := os.Getenv("GITHUB_REF"); ref != "" && strings.HasPrefix(ref, "refs/tags/") {
 		return path.Base(ref)
 	}
 
-	// Default tag for previews and PRs.
+	// Jenkins previews.
 	if os.Getenv("BUILD_NUMBER") != "" {
-		version := time.Now().Format("20060102") + "." + os.Getenv("BUILD_NUMBER")
-		if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" {
-			version += ".preview"
+		if gerrit.IsPreview() {
+			return gerrit.SimulatedBranch()
 		}
-		return version
+		return os.Getenv("BUILD_ID") + "-" + os.Getenv("GERRIT_NEWREV")
 	}
 
 	// Last strategy is to use the last commit hash.
@@ -44,8 +43,8 @@ func VersionHostname(override string) string {
 	if override != "" {
 		return override
 	}
-	if os.Getenv("BUILD_CAUSE") == "SCMTRIGGER" {
-		return gerrit.Descriptor()
+	if os.Getenv("GERRIT_EVENT_TYPE") == "patchset-created" {
+		return gerrit.SimulatedBranch()
 	}
 	return ""
 }
