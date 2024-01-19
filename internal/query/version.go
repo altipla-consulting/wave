@@ -30,7 +30,7 @@ func Version(ctx context.Context) string {
 	// Jenkins previews.
 	if os.Getenv("BUILD_NUMBER") != "" {
 		if gerrit.IsPreview() {
-			return gerrit.SimulatedBranch()
+			return "preview-" + os.Getenv("BUILD_ID") + "-" + gerrit.ChangeNumber() + "-" + gerrit.PatchSet()
 		}
 		return os.Getenv("BUILD_ID") + "-" + os.Getenv("GERRIT_NEWREV")
 	}
