@@ -85,6 +85,7 @@ func init() {
 		}
 
 		version := query.Version(command.Context())
+		imageTag := query.VersionImageTag(command.Context())
 
 		log.WithFields(log.Fields{
 			"name":            app,
@@ -99,9 +100,9 @@ func init() {
 		}
 		env = append(env, flagEnv...)
 
-		image := "eu.gcr.io/" + flagProject + "/" + app + ":" + version
+		image := "eu.gcr.io/" + flagProject + "/" + app + ":" + imageTag
 		if flagRepo != "" {
-			image = fmt.Sprintf("europe-west1-docker.pkg.dev/%s/%s/%s:%s", flagProject, flagRepo, app, version)
+			image = fmt.Sprintf("europe-west1-docker.pkg.dev/%s/%s/%s:%s", flagProject, flagRepo, app, imageTag)
 		}
 
 		gcloud := []string{

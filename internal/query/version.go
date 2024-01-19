@@ -50,6 +50,12 @@ func VersionHostname(override string) string {
 	return ""
 }
 
+func VersionImageTag(ctx context.Context) string {
+	version := Version(ctx)
+	version = strings.Replace(version, "+", "-", 1)
+	return version
+}
+
 func IsRelease() bool {
 	if !IsGitHubActions() {
 		return !gerrit.IsPreview()
