@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/altipla-consulting/wave/internal/gerrit"
 )
@@ -30,9 +31,9 @@ func Version(ctx context.Context) string {
 	// Jenkins previews.
 	if os.Getenv("BUILD_NUMBER") != "" {
 		if gerrit.IsPreview() {
-			return "preview-" + os.Getenv("BUILD_ID") + "-" + gerrit.ChangeNumber() + "-" + gerrit.PatchSet()
+			return time.Now().Format("20060102") + "." + os.Getenv("BUILD_NUMBER") + "-preview." + gerrit.ChangeNumber() + "." + gerrit.PatchSet()
 		}
-		return os.Getenv("BUILD_ID") + "-" + os.Getenv("GERRIT_NEWREV")
+		return time.Now().Format("20060102") + "." + os.Getenv("BUILD_NUMBER") + "+" + os.Getenv("GERRIT_NEWREV")[0:7]
 	}
 
 	// Last strategy is to use the last commit hash.
