@@ -32,4 +32,5 @@ func init() {
 	cmdRoot.AddCommand(cmdPages)
 	cmdRoot.AddCommand(cmdPreview)
 	cmdRoot.AddCommand(debug.Cmd)
+	cmdRoot.AddCommand(cmdVersion)
 }
