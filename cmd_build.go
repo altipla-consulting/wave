@@ -41,6 +41,8 @@ func init() {
 			source = flagSource
 		}
 
+		imageTag := query.VersionImageTag(command.Context())
+
 		logger.Info("Build app")
 		build := exec.Command(
 			"docker",
@@ -48,7 +50,7 @@ func init() {
 			"--cache-from", "eu.gcr.io/"+flagProject+"/"+app+":latest",
 			"-f", source+"/Dockerfile",
 			"-t", "eu.gcr.io/"+flagProject+"/"+app+":latest",
-			"-t", "eu.gcr.io/"+flagProject+"/"+app+":"+query.Version(command.Context()),
+			"-t", "eu.gcr.io/"+flagProject+"/"+app+":"+imageTag,
 			".",
 		)
 		build.Stdout = os.Stdout
@@ -65,7 +67,7 @@ func init() {
 			return errors.Trace(err)
 		}
 
-		push = exec.Command("docker", "push", "eu.gcr.io/"+flagProject+"/"+app+":"+query.Version(command.Context()))
+		push = exec.Command("docker", "push", "eu.gcr.io/"+flagProject+"/"+app+":"+imageTag)
 		push.Stdout = os.Stdout
 		push.Stderr = os.Stderr
 		if err := push.Run(); err != nil {
