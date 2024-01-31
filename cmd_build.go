@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/altipla-consulting/errors"
 	log "github.com/sirupsen/logrus"
@@ -51,9 +52,23 @@ func init() {
 			"-t", "eu.gcr.io/" + flagProject + "/" + app + ":latest",
 			"-t", "eu.gcr.io/" + flagProject + "/" + app + ":" + imageTag,
 		}
-		if os.Getenv("NPM_CONFIG_USERCONFIG") != "" {
-			buildArgs = append(buildArgs, "--secret", "id=npmrc,src="+os.Getenv("NPM_CONFIG_USERCONFIG"))
+
+		npmrc := os.Getenv("NPM_CONFIG_USERCONFIG")
+		if npmrc == "" {
+			home, err := os.UserHomeDir()
+			if err != nil {
+				return errors.Trace(err)
+			}
+			if _, err := os.Stat(filepath.Join(home, ".npmrc")); err != nil && !os.IsNotExist(err) {
+				return errors.Trace(err)
+			} else if err == nil {
+				npmrc = filepath.Join(home, ".npmrc")
+			}
 		}
+		if npmrc != "" {
+			buildArgs = append(buildArgs, "--secret", "id=npmrc,src="+npmrc)
+		}
+
 		buildArgs = append(buildArgs, ".")
 		build := exec.Command("docker", buildArgs...)
 		build.Stdout = os.Stdout
