@@ -44,15 +44,18 @@ func init() {
 		imageTag := query.VersionImageTag(command.Context())
 
 		logger.Info("Build app")
-		build := exec.Command(
-			"docker",
+		buildArgs := []string{
 			"build",
-			"--cache-from", "eu.gcr.io/"+flagProject+"/"+app+":latest",
-			"-f", source+"/Dockerfile",
-			"-t", "eu.gcr.io/"+flagProject+"/"+app+":latest",
-			"-t", "eu.gcr.io/"+flagProject+"/"+app+":"+imageTag,
-			".",
-		)
+			"--cache-from", "eu.gcr.io/" + flagProject + "/" + app + ":latest",
+			"-f", source + "/Dockerfile",
+			"-t", "eu.gcr.io/" + flagProject + "/" + app + ":latest",
+			"-t", "eu.gcr.io/" + flagProject + "/" + app + ":" + imageTag,
+		}
+		if os.Getenv("NPM_CONFIG_USERCONFIG") != "" {
+			buildArgs = append(buildArgs, "--secret", "id=npmrc,src="+os.Getenv("NPM_CONFIG_USERCONFIG"))
+		}
+		buildArgs = append(buildArgs, ".")
+		build := exec.Command("docker", buildArgs...)
 		build.Stdout = os.Stdout
 		build.Stderr = os.Stderr
 		if err := build.Run(); err != nil {
