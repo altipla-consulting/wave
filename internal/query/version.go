@@ -33,7 +33,10 @@ func Version(ctx context.Context) string {
 		if gerrit.IsPreview() {
 			return time.Now().Format("20060102") + "." + os.Getenv("BUILD_NUMBER") + ".0-preview." + gerrit.ChangeNumber() + "." + gerrit.PatchSet()
 		}
-		return time.Now().Format("20060102") + "." + os.Getenv("BUILD_NUMBER") + ".0+" + os.Getenv("GERRIT_NEWREV")[0:7]
+		if os.Getenv("GERRIT_NEWREV") != "" {
+			return time.Now().Format("20060102") + "." + os.Getenv("BUILD_NUMBER") + ".0+" + os.Getenv("GERRIT_NEWREV")[0:7]
+		}
+		return time.Now().Format("20060102") + "." + os.Getenv("BUILD_NUMBER") + ".0"
 	}
 
 	// Last strategy is to use the last commit hash.
