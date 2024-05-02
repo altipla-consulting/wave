@@ -36,6 +36,9 @@ func init() {
 		}
 
 		version := query.Version(command.Context())
+		if version[0] >= '0' && version[0] <= '9' {
+			version = "v" + version
+		}
 		logger := log.WithFields(log.Fields{
 			"name":    app,
 			"version": version,
