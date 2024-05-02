@@ -35,10 +35,7 @@ func init() {
 			flagProject = env.GoogleProject()
 		}
 
-		version := query.Version(command.Context())
-		if version[0] >= '0' && version[0] <= '9' {
-			version = "v" + version
-		}
+		version := query.VersionImageTag(command.Context())
 		logger := log.WithFields(log.Fields{
 			"name":    app,
 			"version": version,

@@ -146,6 +146,9 @@ func replaceEnv(ctx context.Context, flagSentry, placeholder string) (string, er
 	case placeholder == "VERSION":
 		return query.Version(ctx), nil
 
+	case placeholder == "IMAGE_TAG":
+		return query.VersionImageTag(ctx), nil
+
 	case placeholder == "SENTRY_DSN":
 		if flagSentry == "" {
 			return "", errors.Errorf("missing --sentry flag")
