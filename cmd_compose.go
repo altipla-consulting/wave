@@ -105,7 +105,7 @@ func init() {
 		}
 
 		logger.Info("Sending container changes to the remote machine")
-		up := exec.CommandContext(cmd.Context(), "docker", "compose", "-f", tmpFile, "up", "-d")
+		up := exec.CommandContext(cmd.Context(), "docker", "compose", "-f", tmpFile, "up", "-d", "--remove-orphans")
 		up.Stderr = os.Stderr
 		up.Stdout = os.Stdout
 		up.Env = os.Environ()
