@@ -1,6 +1,6 @@
 module github.com/altipla-consulting/wave
 
-go 1.20
+go 1.22
 
 require (
 	github.com/altipla-consulting/cmdbase v0.2.5
