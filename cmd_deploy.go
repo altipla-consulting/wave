@@ -66,24 +66,22 @@ func init() {
 			"version": version,
 		}).Info("Deploy app")
 
-		env := []string{
-			"SENTRY_DSN=" + keys[0].DSN.Public,
-			"VERSION=" + version,
-		}
-
 		imageTag := query.VersionImageTag(command.Context())
 		image := "eu.gcr.io/" + flagProject + "/" + app + ":" + imageTag
 		if flagRepo != "" {
 			image = fmt.Sprintf("europe-west1-docker.pkg.dev/%s/%s/%s:%s", flagProject, flagRepo, app, imageTag)
 		}
 
+		env := []string{
+			"SENTRY_DSN=" + keys[0].DSN.Public,
+			"VERSION=" + version,
+		}
 		gcloud := []string{
 			"beta", "run", "deploy",
 			app,
 			"--image", image,
 			"--region", flagRegion,
 			"--platform", "managed",
-			"--timeout", "60s",
 			"--update-env-vars", strings.Join(env, ","),
 			"--labels", "app=" + app,
 		}
