@@ -30,28 +30,13 @@ func init() {
 	const maxDeployAttempts = 2
 
 	var flagProject, flagRegion, flagRepo string
-	var flagMemory string
-	var flagServiceAccount string
 	var flagSentry string
-	var flagVolumeSecret, flagEnvSecret []string
-	var flagEnv []string
 	var flagTag string
-	var flagAlwaysOn bool
-	var flagCloudSQL []string
-	var flagConcurrency int64
 	cmdDeploy.Flags().StringVar(&flagProject, "project", "", "Google Cloud project where the container will be stored. Defaults to the GOOGLE_PROJECT environment variable.")
 	cmdDeploy.Flags().StringVar(&flagRegion, "region", "europe-west1", "Region where resources will be hosted.")
 	cmdDeploy.Flags().StringVar(&flagRepo, "repo", "", "Artifact Registry repository name where the container is stored.")
-	cmdDeploy.Flags().StringVar(&flagMemory, "memory", "", "Memory available inside the Cloud Run application. Default: 256Mi.")
-	cmdDeploy.Flags().StringVar(&flagServiceAccount, "service-account", "", "Service account. Defaults to one with the name of the application.")
 	cmdDeploy.Flags().StringVar(&flagSentry, "sentry", "", "Name of the sentry project to configure.")
-	cmdDeploy.Flags().StringSliceVar(&flagVolumeSecret, "volume-secret", nil, "Secrets to mount as volumes.")
-	cmdDeploy.Flags().StringSliceVar(&flagEnvSecret, "env-secret", nil, "Secrets to mount as environment variables.")
-	cmdDeploy.Flags().StringSliceVar(&flagEnv, "env", nil, "Custom environment variables to define as `KEY=value` pairs.")
 	cmdDeploy.Flags().StringVar(&flagTag, "tag", "", "Name of the revision included in the URL. Defaults to the Gerrit change and patchset.")
-	cmdDeploy.Flags().BoolVar(&flagAlwaysOn, "always-on", false, "App will always have CPU even if it's in the background without requests.")
-	cmdDeploy.Flags().StringSliceVar(&flagCloudSQL, "cloudsql", nil, "CloudSQL instances to connect to. Only the name.")
-	cmdDeploy.Flags().Int64Var(&flagConcurrency, "concurrency", 50, "Maximum number of concurrent requests.")
 	cmdDeploy.MarkFlagRequired("sentry")
 
 	cmdDeploy.RunE = func(command *cobra.Command, args []string) error {
@@ -59,16 +44,6 @@ func init() {
 
 		if flagProject == "" {
 			flagProject = env.GoogleProject()
-		}
-		if flagServiceAccount == "" {
-			flagServiceAccount = app
-		}
-		if flagMemory == "" {
-			if flagAlwaysOn {
-				flagMemory = "512Mi"
-			} else {
-				flagMemory = "256Mi"
-			}
 		}
 
 		client, err := sentry.NewClient(env.SentryAuthToken(), nil, nil)
@@ -87,17 +62,14 @@ func init() {
 		version := query.Version(command.Context())
 
 		log.WithFields(log.Fields{
-			"name":            app,
-			"version":         version,
-			"memory":          flagMemory,
-			"service-account": flagServiceAccount,
+			"name":    app,
+			"version": version,
 		}).Info("Deploy app")
 
 		env := []string{
 			"SENTRY_DSN=" + keys[0].DSN.Public,
 			"VERSION=" + version,
 		}
-		env = append(env, flagEnv...)
 
 		imageTag := query.VersionImageTag(command.Context())
 		image := "eu.gcr.io/" + flagProject + "/" + app + ":" + imageTag
@@ -111,47 +83,15 @@ func init() {
 			"--image", image,
 			"--region", flagRegion,
 			"--platform", "managed",
-			"--concurrency", fmt.Sprintf("%d", flagConcurrency),
 			"--timeout", "60s",
-			"--service-account", flagServiceAccount + "@" + flagProject + ".iam.gserviceaccount.com",
-			"--memory", flagMemory,
-			"--set-env-vars", strings.Join(env, ","),
+			"--update-env-vars", strings.Join(env, ","),
 			"--labels", "app=" + app,
-		}
-		if len(flagVolumeSecret) > 0 || len(flagEnvSecret) > 0 {
-			var secrets []string
-			for _, secret := range flagVolumeSecret {
-				if secret == "ravendb-client-credentials" {
-					secrets = append(secrets, "/etc/secrets/"+secret+"="+secret+":latest")
-				}
-				secrets = append(secrets, "/etc/secrets-v2/"+secret+"/value="+secret+":latest")
-			}
-			for _, secret := range flagEnvSecret {
-				varname := strings.Replace(strings.ToUpper(secret), "-", "_", -1)
-				secrets = append(secrets, varname+"="+secret+":latest")
-			}
-			gcloud = append(gcloud, "--set-secrets", strings.Join(secrets, ","))
 		}
 		if tag := query.VersionHostname(flagTag); tag != "" {
 			if !query.IsRelease() {
 				gcloud = append(gcloud, "--no-traffic")
-				gcloud = append(gcloud, "--max-instances", "1")
 			}
 			gcloud = append(gcloud, "--tag", tag)
-		} else {
-			gcloud = append(gcloud, "--max-instances", "20")
-		}
-		if flagAlwaysOn {
-			gcloud = append(gcloud, "--no-cpu-throttling")
-		} else {
-			gcloud = append(gcloud, "--cpu-throttling")
-		}
-		if len(flagCloudSQL) > 0 {
-			var instances []string
-			for _, instance := range flagCloudSQL {
-				instances = append(instances, fmt.Sprintf("%s:%s:%s", flagProject, flagRegion, instance))
-			}
-			gcloud = append(gcloud, "--set-cloudsql-instances", strings.Join(instances, ","))
 		}
 
 		log.Debug(strings.Join(append([]string{"gcloud"}, gcloud...), " "))
