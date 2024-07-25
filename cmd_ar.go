@@ -28,14 +28,14 @@ func init() {
 	cmdAR.Flags().StringVar(&flagSource, "source", "", "Source folder. Defaults to a folder with the name of the app.")
 	cmdAR.MarkFlagRequired("repo")
 
-	cmdAR.RunE = func(command *cobra.Command, args []string) error {
+	cmdAR.RunE = func(cmd *cobra.Command, args []string) error {
 		app := args[0]
 
 		if flagProject == "" {
 			flagProject = env.GoogleProject()
 		}
 
-		version := query.VersionImageTag(command.Context())
+		version := query.VersionImageTag(cmd.Context())
 		logger := log.WithFields(log.Fields{
 			"name":    app,
 			"version": version,
@@ -67,7 +67,7 @@ func init() {
 
 		docker = append(docker, ".") // build context
 
-		build := exec.Command("docker", docker...)
+		build := exec.CommandContext(cmd.Context(), "docker", docker...)
 		build.Stdout = os.Stdout
 		build.Stderr = os.Stderr
 		if err := build.Run(); err != nil {
@@ -75,14 +75,14 @@ func init() {
 		}
 
 		logger.Info("Push to Artifact Registry")
-		push := exec.Command("docker", "push", image+":latest")
+		push := exec.CommandContext(cmd.Context(), "docker", "push", image+":latest")
 		push.Stdout = os.Stdout
 		push.Stderr = os.Stderr
 		if err := push.Run(); err != nil {
 			return errors.Trace(err)
 		}
 
-		push = exec.Command("docker", "push", image+":"+version)
+		push = exec.CommandContext(cmd.Context(), "docker", "push", image+":"+version)
 		push.Stdout = os.Stdout
 		push.Stderr = os.Stderr
 		if err := push.Run(); err != nil {
