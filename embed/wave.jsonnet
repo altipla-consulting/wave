@@ -4,19 +4,19 @@
       deployment: {
         apiVersion: 'apps/v1',
         kind: 'Deployment',
-        metadata: {name: name},
+        metadata: { name: name },
         spec: {
           replicas: 1,
           revisionHistoryLimit: 10,
           strategy: {
-            rollingUpdate: {maxUnavailable: 0},
+            rollingUpdate: { maxUnavailable: 0 },
           },
           selector: {
-            matchLabels: {app: name},
+            matchLabels: { app: name },
           },
           template: {
             metadata: {
-              labels: {app: name},
+              labels: { app: name },
             },
             spec: {
               containers: [],
@@ -31,10 +31,10 @@
       statefulset: {
         apiVersion: 'apps/v1',
         kind: 'StatefulSet',
-        metadata: {name: name},
+        metadata: { name: name },
         spec: {
           selector: {
-            matchLabels: {app: name},
+            matchLabels: { app: name },
           },
           serviceName: name,
           updateStrategy: {
@@ -42,7 +42,7 @@
           },
           template: {
             metadata: {
-              labels: {app: name},
+              labels: { app: name },
             },
             spec: {
               containers: [],
@@ -58,8 +58,8 @@
       image: image,
       ports: [],
       env: [
-        {name: 'VERSION', value: std.extVar('version')},
-        {name: 'K_SERVICE', value: name},
+        { name: 'VERSION', value: std.extVar('version') },
+        { name: 'K_SERVICE', value: name },
       ],
       volumeMounts: [],
     },
@@ -67,7 +67,7 @@
     ServiceAccount: function(name) {
       apiVersion: 'v1',
       kind: 'ServiceAccount',
-      metadata: {name: name},
+      metadata: { name: name },
     },
 
     Service: function(name) {
@@ -77,7 +77,7 @@
         name: name,
       },
       spec: {
-        selector: {app: name},
+        selector: { app: name },
         ports: [],
       },
     },
@@ -89,18 +89,18 @@
         name: name + '-headless',
       },
       spec: {
-        selector: {app: name},
+        selector: { app: name },
         ports: [],
-        clusterIP: 'None'
+        clusterIP: 'None',
       },
     },
 
     ExternalService: function(name, ip) {
       apiVersion: 'v1',
       kind: 'Service',
-      metadata: {name: name},
+      metadata: { name: name },
       spec: {
-        selector: {app: name},
+        selector: { app: name },
         ports: [],
         type: 'LoadBalancer',
         loadBalancerIP: ip,
@@ -111,7 +111,7 @@
     CronJob: function(name, schedule) {
       apiVersion: 'batch/v1',
       kind: 'CronJob',
-      metadata: {name: name},
+      metadata: { name: name },
       spec: {
         schedule: schedule,
         jobTemplate: {
@@ -234,7 +234,7 @@
       identitySecret: {
         apiVersion: 'v1',
         kind: 'Secret',
-        metadata: {name: name + '-identity'},
+        metadata: { name: name + '-identity' },
         type: 'Opaque',
         data: {
           trigger: std.base64('auto-identity'),
@@ -265,7 +265,7 @@
         {
           name: 'K8S_POD_IP',
           valueFrom: {
-            fieldRef: {fieldPath: 'status.podIP'},
+            fieldRef: { fieldPath: 'status.podIP' },
           },
         },
       ],
@@ -274,12 +274,12 @@
     healthchecks: {
       HTTP: function(port=8000) {
         livenessProbe: {
-          httpGet: {path: '/health', port: port},
+          httpGet: { path: '/health', port: port },
           timeoutSeconds: 5,
           initialDelaySeconds: 10,
         },
         readinessProbe: {
-          httpGet: {path: '/health', port: port},
+          httpGet: { path: '/health', port: port },
           timeoutSeconds: 5,
           initialDelaySeconds: 10,
         },
@@ -355,8 +355,8 @@
 
     Request: function(memory, cpu='2m') {
       resources+: {
-        requests: {cpu: cpu, memory: memory},
-        limits: {memory: memory},
+        requests: { cpu: cpu, memory: memory },
+        limits: { memory: memory },
       },
     },
   },

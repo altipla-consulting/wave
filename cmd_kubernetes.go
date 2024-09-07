@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -41,17 +40,8 @@ func init() {
 	cmdKubernetes.PersistentFlags().BoolVar(&flagApply, "apply", false, "Apply the output to the Kubernetes cluster instead of printing it.")
 
 	cmdKubernetes.RunE = func(command *cobra.Command, args []string) error {
-		content, err := ioutil.ReadFile(args[0])
-		if err != nil {
-			return errors.Trace(err)
-		}
-
-		sentryClient, err := sentry.NewClient(env.SentryAuthToken(), nil, nil)
-		if err != nil {
-			return errors.Trace(err)
-		}
 		nativeFuncs := []*jsonnet.NativeFunction{
-			nativeFuncSentry(sentryClient),
+			nativeFuncSentry(),
 		}
 
 		opts := RunOptions{
@@ -60,7 +50,7 @@ func init() {
 			Env:         flagEnv,
 			Filter:      flagFilter,
 		}
-		result, err := runScript(command.Context(), args[0], content, opts)
+		result, err := runScript(command.Context(), args[0], opts)
 		if err != nil {
 			return errors.Trace(err)
 		}
@@ -94,13 +84,13 @@ type RunOptions struct {
 	Filter      string
 }
 
-func runScript(ctx context.Context, filename string, content []byte, opts RunOptions) (*bytes.Buffer, error) {
-	dir, err := ioutil.TempDir("", "wave")
+func runScript(ctx context.Context, filename string, opts RunOptions) (*bytes.Buffer, error) {
+	dir, err := os.MkdirTemp("", "wave")
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
 	defer os.RemoveAll(dir)
-	if err := ioutil.WriteFile(filepath.Join(dir, "wave.jsonnet"), embed.Wave, 0600); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "wave.jsonnet"), embed.Wave, 0600); err != nil {
 		return nil, errors.Trace(err)
 	}
 
@@ -122,7 +112,7 @@ func runScript(ctx context.Context, filename string, content []byte, opts RunOpt
 		vm.ExtVar(parts[0], parts[1])
 	}
 
-	output, err := vm.EvaluateSnippet(filename, string(content))
+	output, err := vm.EvaluateFile(filename)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -148,11 +138,16 @@ func runScript(ctx context.Context, filename string, content []byte, opts RunOpt
 	return &buf, nil
 }
 
-func nativeFuncSentry(client *sentry.Client) *jsonnet.NativeFunction {
+func nativeFuncSentry() *jsonnet.NativeFunction {
 	return &jsonnet.NativeFunction{
 		Name:   "sentry",
 		Params: []ast.Identifier{"name"},
 		Func: func(args []interface{}) (interface{}, error) {
+			client, err := sentry.NewClient(env.SentryAuthToken(), nil, nil)
+			if err != nil {
+				return nil, errors.Trace(err)
+			}
+
 			org := sentry.Organization{
 				Slug: sentryAPIString("altipla-consulting"),
 			}
