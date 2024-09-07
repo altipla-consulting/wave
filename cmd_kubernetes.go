@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"sort"
 	"strings"
 
@@ -33,15 +32,16 @@ var cmdKubernetes = &cobra.Command{
 func init() {
 	var flagFilter string
 	var flagEnv, flagIncludes []string
-	var flagApply bool
-	cmdKubernetes.PersistentFlags().StringVarP(&flagFilter, "filter", "f", "", "Filter top level items when generating items.")
-	cmdKubernetes.PersistentFlags().StringSliceVarP(&flagEnv, "env", "e", nil, "Set external variables.")
-	cmdKubernetes.PersistentFlags().StringSliceVarP(&flagIncludes, "include", "i", nil, "Directories to include when running the jsonnet script.")
-	cmdKubernetes.PersistentFlags().BoolVar(&flagApply, "apply", false, "Apply the output to the Kubernetes cluster instead of printing it.")
+	var flagApply, flagDisableSentry bool
+	cmdKubernetes.Flags().StringVarP(&flagFilter, "filter", "f", "", "Filter top level items when generating items.")
+	cmdKubernetes.Flags().StringSliceVarP(&flagEnv, "env", "e", nil, "Set external variables.")
+	cmdKubernetes.Flags().StringSliceVarP(&flagIncludes, "include", "i", nil, "Directories to include when running the jsonnet script.")
+	cmdKubernetes.Flags().BoolVar(&flagApply, "apply", false, "Apply the output to the Kubernetes cluster instead of printing it.")
+	cmdKubernetes.Flags().BoolVar(&flagDisableSentry, "disable-sentry", false, "Disable Sentry configurations allowing a quick break-glass deployment.")
 
 	cmdKubernetes.RunE = func(command *cobra.Command, args []string) error {
 		nativeFuncs := []*jsonnet.NativeFunction{
-			nativeFuncSentry(),
+			nativeFuncSentry(flagDisableSentry),
 		}
 
 		opts := RunOptions{
@@ -84,25 +84,35 @@ type RunOptions struct {
 	Filter      string
 }
 
-func runScript(ctx context.Context, filename string, opts RunOptions) (*bytes.Buffer, error) {
-	dir, err := os.MkdirTemp("", "wave")
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
-	defer os.RemoveAll(dir)
-	if err := os.WriteFile(filepath.Join(dir, "wave.jsonnet"), embed.Wave, 0600); err != nil {
-		return nil, errors.Trace(err)
-	}
+type customImporter struct {
+	file *jsonnet.FileImporter
+	mem  *jsonnet.MemoryImporter
+}
 
+func (c *customImporter) Import(importedFrom string, importedPath string) (contents jsonnet.Contents, foundAt string, err error) {
+	if importedPath == "wave.jsonnet" {
+		return c.mem.Import(importedFrom, importedPath)
+	}
+	return c.file.Import(importedFrom, importedPath)
+}
+
+func runScript(ctx context.Context, filename string, opts RunOptions) (*bytes.Buffer, error) {
 	vm := jsonnet.MakeVM()
-	vm.Importer(&jsonnet.FileImporter{
-		JPaths: append(opts.Includes, ".", dir),
+	vm.Importer(&customImporter{
+		file: &jsonnet.FileImporter{
+			JPaths: append(opts.Includes, "."),
+		},
+		mem: &jsonnet.MemoryImporter{
+			Data: map[string]jsonnet.Contents{
+				"wave.jsonnet": jsonnet.MakeContentsRaw(embed.Wave),
+			},
+		},
 	})
 	for _, f := range opts.NativeFuncs {
 		vm.NativeFunction(f)
 	}
-
 	vm.ExtVar("version", query.Version(ctx))
+	vm.ExtVar("image-tag", query.VersionImageTag(ctx))
 
 	for _, v := range opts.Env {
 		parts := strings.Split(v, "=")
@@ -138,11 +148,20 @@ func runScript(ctx context.Context, filename string, opts RunOptions) (*bytes.Bu
 	return &buf, nil
 }
 
-func nativeFuncSentry() *jsonnet.NativeFunction {
+func nativeFuncSentry(disableSentry bool) *jsonnet.NativeFunction {
 	return &jsonnet.NativeFunction{
 		Name:   "sentry",
 		Params: []ast.Identifier{"name"},
 		Func: func(args []interface{}) (interface{}, error) {
+			if os.Getenv("SENTRY_AUTH_TOKEN") == "" {
+				if disableSentry {
+					return "", nil
+				}
+
+				// Panic with the correct error.
+				env.SentryAuthToken()
+			}
+
 			client, err := sentry.NewClient(env.SentryAuthToken(), nil, nil)
 			if err != nil {
 				return nil, errors.Trace(err)
