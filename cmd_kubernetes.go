@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -14,6 +15,7 @@ import (
 	"github.com/atlassian/go-sentry-api"
 	"github.com/google/go-jsonnet"
 	"github.com/google/go-jsonnet/ast"
+	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
@@ -40,15 +42,14 @@ func init() {
 	cmdKubernetes.Flags().BoolVar(&flagDisableSentry, "disable-sentry", false, "Disable Sentry configurations allowing a quick break-glass deployment.")
 
 	cmdKubernetes.RunE = func(command *cobra.Command, args []string) error {
-		nativeFuncs := []*jsonnet.NativeFunction{
-			nativeFuncSentry(flagDisableSentry),
-		}
-
 		opts := RunOptions{
-			NativeFuncs: nativeFuncs,
-			Includes:    flagIncludes,
-			Env:         flagEnv,
-			Filter:      flagFilter,
+			NativeFuncs: []*jsonnet.NativeFunction{
+				nativeFuncSentry(flagDisableSentry),
+				nativeFuncEnvFile(),
+			},
+			Includes: flagIncludes,
+			Env:      flagEnv,
+			Filter:   flagFilter,
 		}
 		result, err := runScript(command.Context(), args[0], opts)
 		if err != nil {
@@ -126,7 +127,7 @@ func runScript(ctx context.Context, filename string, opts RunOptions) (*bytes.Bu
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	var result interface{}
+	var result any
 	if err := json.Unmarshal([]byte(output), &result); err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -152,7 +153,7 @@ func nativeFuncSentry(disableSentry bool) *jsonnet.NativeFunction {
 	return &jsonnet.NativeFunction{
 		Name:   "sentry",
 		Params: []ast.Identifier{"name"},
-		Func: func(args []interface{}) (interface{}, error) {
+		Func: func(args []any) (any, error) {
 			if os.Getenv("SENTRY_AUTH_TOKEN") == "" {
 				if disableSentry {
 					return "", nil
@@ -180,15 +181,33 @@ func nativeFuncSentry(disableSentry bool) *jsonnet.NativeFunction {
 	}
 }
 
-type k8sList struct {
-	APIVersion string        `json:"apiVersion"`
-	Kind       string        `json:"kind"`
-	Items      []interface{} `json:"items"`
+func nativeFuncEnvFile() *jsonnet.NativeFunction {
+	return &jsonnet.NativeFunction{
+		Name:   "envfile",
+		Params: []ast.Identifier{"filename"},
+		Func: func(args []any) (any, error) {
+			m, err := godotenv.Read(args[0].(string))
+			if err != nil {
+				return nil, errors.Trace(err)
+			}
+			res := make(map[string]any)
+			for k, v := range m {
+				res[k] = base64.URLEncoding.EncodeToString([]byte(v))
+			}
+			return res, nil
+		},
+	}
 }
 
-func extractItems(list *k8sList, filter []string, v interface{}) {
+type k8sList struct {
+	APIVersion string `json:"apiVersion"`
+	Kind       string `json:"kind"`
+	Items      []any  `json:"items"`
+}
+
+func extractItems(list *k8sList, filter []string, v any) {
 	switch v := v.(type) {
-	case map[string]interface{}:
+	case map[string]any:
 		var keys []string
 		for k := range v {
 			keys = append(keys, k)
@@ -196,7 +215,7 @@ func extractItems(list *k8sList, filter []string, v interface{}) {
 		sort.Strings(keys)
 		for _, key := range keys {
 			child := v[key]
-			if ent, ok := child.(map[string]interface{}); ok {
+			if ent, ok := child.(map[string]any); ok {
 				if _, ok := ent["apiVersion"]; ok {
 					if len(filter) == 0 || filter[0] == key {
 						list.Items = append(list.Items, ent)

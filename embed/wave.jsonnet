@@ -2,6 +2,7 @@
   version: std.extVar('version'),
   imageTag: function(name) name + ':' + std.extVar('image-tag'),
   sentry: function(name) std.native('sentry')(name),
+  envfile: function(filename) std.native('envfile')(filename),
 
   objects: {
     Deployment: function(name) {
