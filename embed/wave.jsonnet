@@ -3,6 +3,7 @@
   imageTag: function(name) name + ':' + std.extVar('image-tag'),
   sentry: function(name) std.native('sentry')(name),
   envfile: function(filename) std.native('envfile')(filename),
+  secret: function(name) std.native('secret')(name),
 
   objects: {
     Deployment: function(name) {

@@ -46,6 +46,7 @@ func init() {
 			NativeFuncs: []*jsonnet.NativeFunction{
 				nativeFuncSentry(flagDisableSentry),
 				nativeFuncEnvFile(),
+				nativeFuncSecret(),
 			},
 			Includes: flagIncludes,
 			Env:      flagEnv,
@@ -195,6 +196,20 @@ func nativeFuncEnvFile() *jsonnet.NativeFunction {
 				res[k] = base64.URLEncoding.EncodeToString([]byte(v))
 			}
 			return res, nil
+		},
+	}
+}
+
+func nativeFuncSecret() *jsonnet.NativeFunction {
+	return &jsonnet.NativeFunction{
+		Name:   "secret",
+		Params: []ast.Identifier{"name"},
+		Func: func(args []any) (any, error) {
+			v := os.Getenv(args[0].(string))
+			if v == "" {
+				return nil, errors.Errorf("missing environment variable %q", args[0])
+			}
+			return base64.URLEncoding.EncodeToString([]byte(v)), nil
 		},
 	}
 }
