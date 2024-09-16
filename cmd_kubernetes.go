@@ -193,7 +193,7 @@ func nativeFuncEnvFile() *jsonnet.NativeFunction {
 			}
 			res := make(map[string]any)
 			for k, v := range m {
-				res[k] = base64.URLEncoding.EncodeToString([]byte(v))
+				res[k] = base64.StdEncoding.EncodeToString([]byte(v))
 			}
 			return res, nil
 		},
@@ -209,7 +209,7 @@ func nativeFuncSecret() *jsonnet.NativeFunction {
 			if v == "" {
 				return nil, errors.Errorf("missing environment variable %q", args[0])
 			}
-			return base64.URLEncoding.EncodeToString([]byte(v)), nil
+			return base64.StdEncoding.EncodeToString([]byte(v)), nil
 		},
 	}
 }
