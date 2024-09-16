@@ -16,7 +16,15 @@ var cmdVersion = &cobra.Command{
 }
 
 func init() {
+	var flagImageTag bool
+	cmdVersion.Flags().BoolVar(&flagImageTag, "image-tag", false, "Print the image tag.")
+
 	cmdVersion.RunE = func(cmd *cobra.Command, args []string) error {
+		if flagImageTag {
+			fmt.Println(query.VersionImageTag(cmd.Context()))
+			return nil
+		}
+
 		fmt.Println(query.Version(cmd.Context()))
 		return nil
 	}
