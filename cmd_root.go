@@ -20,6 +20,7 @@ func init() {
 		"Build and publish applications.",
 		cmdbase.WithInstall(),
 		cmdbase.WithUpdate("github.com/altipla-consulting/wave"))
+	cmdRoot.AddCommand(cmdACR)
 	cmdRoot.AddCommand(cmdAR)
 	cmdRoot.AddCommand(cmdBuild)
 	cmdRoot.AddCommand(cmdCompose)
@@ -31,6 +32,6 @@ func init() {
 	cmdRoot.AddCommand(cmdNetlify)
 	cmdRoot.AddCommand(cmdPages)
 	cmdRoot.AddCommand(cmdPreview)
-	cmdRoot.AddCommand(debug.Cmd)
 	cmdRoot.AddCommand(cmdVersion)
+	cmdRoot.AddCommand(debug.Cmd)
 }
