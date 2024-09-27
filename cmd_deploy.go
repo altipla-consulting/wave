@@ -50,7 +50,6 @@ func init() {
 		if err != nil {
 			return errors.Trace(err)
 		}
-
 		org := sentry.Organization{
 			Slug: sentryAPIString("altipla-consulting"),
 		}

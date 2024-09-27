@@ -16,7 +16,7 @@ import (
 var cmdACR = &cobra.Command{
 	Use:     "acr",
 	Short:   "Build a container from a predefined folder structure deploying to Azure Container Registry.",
-	Example: "wave ar foo",
+	Example: "wave acr foo --repo foo-acr",
 	Args:    cobra.ExactArgs(1),
 }
 
