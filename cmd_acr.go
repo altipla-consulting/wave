@@ -29,6 +29,11 @@ func init() {
 	cmdACR.RunE = func(cmd *cobra.Command, args []string) error {
 		app := args[0]
 
+		token := os.Getenv("ACR_TOKEN")
+		if token == "" {
+			return errors.Errorf("Missing ACR_TOKEN environment variable. Assign it with whisper for increased security.")
+		}
+
 		version := query.VersionImageTag(cmd.Context())
 		logger := log.WithFields(log.Fields{
 			"name":    app,
@@ -65,6 +70,14 @@ func init() {
 		build.Stdout = os.Stdout
 		build.Stderr = os.Stderr
 		if err := build.Run(); err != nil {
+			return errors.Trace(err)
+		}
+
+		logger.Info("Log in to Azure Container Registry")
+		login := exec.CommandContext(cmd.Context(), "docker", "login", flagRepo+".azurecr.io", "-u", flagRepo, "-p", token)
+		login.Stdout = os.Stdout
+		login.Stderr = os.Stderr
+		if err := login.Run(); err != nil {
 			return errors.Trace(err)
 		}
 
