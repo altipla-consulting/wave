@@ -67,7 +67,8 @@ func init() {
 			"--name", app,
 			"--resource-group", flagResourceGroup,
 			"--image", fmt.Sprintf("%s.azurecr.io/%s:%s", flagRepo, app, version),
-			"--set-env-vars", fmt.Sprintf("VERSION=%s SENTRY_DSN=%s", version, keys[0].DSN.Public),
+			"--set-env-vars", fmt.Sprintf("VERSION=%s", version),
+			"--set-env-vars", fmt.Sprintf("SENTRY_DSN=%s", keys[0].DSN.Public),
 		}
 		deploy := exec.CommandContext(cmd.Context(), "az", az...)
 		deploy.Stdout = os.Stdout
