@@ -48,7 +48,7 @@ func init() {
 			return errors.Trace(err)
 		}
 		org := sentry.Organization{
-			Slug: sentryAPIString("altipla-consulting"),
+			Slug: sentryAPIString("altipla"),
 		}
 		keys, err := client.GetClientKeys(org, sentry.Project{Slug: sentryAPIString(flagSentry)})
 		if err != nil {

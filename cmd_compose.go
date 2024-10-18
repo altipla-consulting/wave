@@ -158,7 +158,7 @@ func replaceEnv(ctx context.Context, flagSentry, placeholder string) (string, er
 			return "", errors.Trace(err)
 		}
 		org := sentry.Organization{
-			Slug: sentryAPIString("altipla-consulting"),
+			Slug: sentryAPIString("altipla"),
 		}
 		keys, err := client.GetClientKeys(org, sentry.Project{Slug: sentryAPIString(flagSentry)})
 		if err != nil {
@@ -173,7 +173,7 @@ func replaceEnv(ctx context.Context, flagSentry, placeholder string) (string, er
 		}
 		project := strings.TrimSuffix(strings.TrimPrefix(placeholder, "SENTRY_DSN("), ")")
 		org := sentry.Organization{
-			Slug: sentryAPIString("altipla-consulting"),
+			Slug: sentryAPIString("altipla"),
 		}
 		keys, err := client.GetClientKeys(org, sentry.Project{Slug: sentryAPIString(project)})
 		if err != nil {

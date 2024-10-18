@@ -170,7 +170,7 @@ func nativeFuncSentry(disableSentry bool) *jsonnet.NativeFunction {
 			}
 
 			org := sentry.Organization{
-				Slug: sentryAPIString("altipla-consulting"),
+				Slug: sentryAPIString("altipla"),
 			}
 			keys, err := client.GetClientKeys(org, sentry.Project{Slug: sentryAPIString(args[0].(string))})
 			if err != nil {
