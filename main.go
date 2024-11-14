@@ -25,6 +25,7 @@ func init() {
 	cmdRoot.AddCommand(cmdBuild)
 	cmdRoot.AddCommand(cmdCompose)
 	cmdRoot.AddCommand(cmdContainerApp)
+	cmdRoot.AddCommand(cmdContainerAppJob)
 	cmdRoot.AddCommand(cmdDeploy)
 	cmdRoot.AddCommand(cmdECR)
 	cmdRoot.AddCommand(cmdJob)
