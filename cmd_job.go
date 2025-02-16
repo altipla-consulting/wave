@@ -70,7 +70,7 @@ func init() {
 			return errors.Trace(err)
 		}
 
-		version := query.Version(command.Context())
+		version := query.VersionImageTag(command.Context())
 
 		log.WithFields(log.Fields{
 			"name":            app,
