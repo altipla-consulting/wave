@@ -1,4 +1,4 @@
-package main
+package containerapps
 
 import (
 	"fmt"
@@ -14,27 +14,26 @@ import (
 	"github.com/altipla-consulting/wave/internal/query"
 )
 
-var cmdContainerApp = &cobra.Command{
-	Use:        "containerapp",
-	Short:      "Deploy the application to Azure Container Apps.",
-	Example:    "wave containerapp foo --subscription 1234-5678-9012-3456 --resource-group foo-rg",
-	Args:       cobra.ExactArgs(1),
-	Deprecated: "use `wave container-apps build` instead",
+var cmdBuild = &cobra.Command{
+	Use:     "build",
+	Short:   "Deploy the application to Azure Container Apps.",
+	Example: "wave container-apps build foo --subscription 1234-5678-9012-3456 --resource-group foo-rg",
+	Args:    cobra.ExactArgs(1),
 }
 
 func init() {
 	var flagRepo, flagSubscription, flagResourceGroup string
 	var flagSentry string
-	cmdContainerApp.Flags().StringVar(&flagRepo, "repo", "", "Azure Container Registry repository name where the container will be stored.")
-	cmdContainerApp.Flags().StringVar(&flagSubscription, "subscription", "", "Azure subscription ID.")
-	cmdContainerApp.Flags().StringVar(&flagResourceGroup, "resource-group", "", "Azure resource group where the container has been stored. Use `wave acr` to upload it previously.")
-	cmdContainerApp.Flags().StringVar(&flagSentry, "sentry", "", "Name of the sentry project to configure.")
-	cmdContainerApp.MarkFlagRequired("repo")
-	cmdContainerApp.MarkFlagRequired("subscription")
-	cmdContainerApp.MarkFlagRequired("resource-group")
-	cmdContainerApp.MarkFlagRequired("sentry")
+	cmdBuild.Flags().StringVar(&flagRepo, "repo", "", "Azure Container Registry repository name where the container will be stored.")
+	cmdBuild.Flags().StringVar(&flagSubscription, "subscription", "", "Azure subscription ID.")
+	cmdBuild.Flags().StringVar(&flagResourceGroup, "resource-group", "", "Azure resource group where the container has been stored. Use `wave acr` to upload it previously.")
+	cmdBuild.Flags().StringVar(&flagSentry, "sentry", "", "Name of the sentry project to configure.")
+	cmdBuild.MarkFlagRequired("repo")
+	cmdBuild.MarkFlagRequired("subscription")
+	cmdBuild.MarkFlagRequired("resource-group")
+	cmdBuild.MarkFlagRequired("sentry")
 
-	cmdContainerApp.RunE = func(cmd *cobra.Command, args []string) error {
+	cmdBuild.RunE = func(cmd *cobra.Command, args []string) error {
 		app := args[0]
 
 		version := query.VersionImageTag(cmd.Context())

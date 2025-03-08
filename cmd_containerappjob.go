@@ -15,10 +15,11 @@ import (
 )
 
 var cmdContainerAppJob = &cobra.Command{
-	Use:     "containerappjob",
-	Short:   "Deploy the job to Azure Container Apps.",
-	Example: "wave containerappjob foo --subscription 1234-5678-9012-3456 --resource-group foo-rg",
-	Args:    cobra.ExactArgs(1),
+	Use:        "containerappjob",
+	Short:      "Deploy the job to Azure Container Apps.",
+	Example:    "wave containerappjob foo --subscription 1234-5678-9012-3456 --resource-group foo-rg",
+	Args:       cobra.ExactArgs(1),
+	Deprecated: "use `wave container-apps build-job` instead",
 }
 
 func init() {

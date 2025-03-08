@@ -5,6 +5,7 @@ import (
 	"github.com/joho/godotenv"
 	_ "github.com/joho/godotenv/autoload"
 
+	"github.com/altipla-consulting/wave/internal/containerapps"
 	"github.com/altipla-consulting/wave/internal/debug"
 )
 
@@ -36,4 +37,5 @@ func init() {
 	cmdRoot.AddCommand(cmdPreview)
 	cmdRoot.AddCommand(cmdVersion)
 	cmdRoot.AddCommand(debug.Cmd)
+	cmdRoot.AddCommand(containerapps.Cmd)
 }
