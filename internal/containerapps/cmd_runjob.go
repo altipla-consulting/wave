@@ -33,7 +33,7 @@ func init() {
 		logger := log.WithFields(log.Fields{
 			"name": jobName,
 		})
-		logger.Info("Running job")
+		logger.Info("Start job")
 
 		auth := exec.CommandContext(cmd.Context(), "az", "account", "set", "--subscription", flagSubscription)
 		auth.Stdout = os.Stdout
@@ -54,7 +54,7 @@ func init() {
 			return errors.Trace(err)
 		}
 
-		logger.Info("Waiting for job completion")
+		logger.Info("Wait for job completion")
 		wait := []string{
 			"containerapp", "job", "execution", "list",
 			"--name", jobName,
