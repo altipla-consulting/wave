@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log/slog"
 	"net"
 	"os"
 	"os/exec"
@@ -10,7 +11,6 @@ import (
 
 	"github.com/altipla-consulting/errors"
 	"github.com/atlassian/go-sentry-api"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/altipla-consulting/wave/internal/env"
@@ -30,8 +30,8 @@ func init() {
 	cmdCompose.Flags().StringVar(&flagFile, "file", "docker-compose.prod.yml", "Path to the Docker Compose file to deploy.")
 
 	cmdCompose.RunE = func(cmd *cobra.Command, args []string) error {
-		logger := log.WithField("machine", args[0])
-		logger.WithField("version", query.Version(cmd.Context())).Info("Deploy to remote machine with Docker Compose")
+		logger := slog.With(slog.String("machine", args[0]))
+		logger.Info("Deploy to remote machine with Docker Compose", slog.String("version", query.Version(cmd.Context())))
 
 		logger.Info("Downloading SSH key from the remote machine")
 		home, err := os.UserHomeDir()
@@ -118,7 +118,7 @@ func init() {
 	}
 }
 
-func cleanHost(ctx context.Context, logger *log.Entry, host string) error {
+func cleanHost(ctx context.Context, logger *slog.Logger, host string) error {
 	keygen := exec.CommandContext(ctx, "ssh-keygen", "-F", host)
 	keygen.Stderr = os.Stderr
 	if err := keygen.Run(); err != nil {
@@ -130,7 +130,7 @@ func cleanHost(ctx context.Context, logger *log.Entry, host string) error {
 		return nil
 	} else {
 		// Remove the stored host, could be outdated.
-		logger.WithField("host", host).Info("Removing old stored host authentication")
+		logger.Info("Removing old stored host authentication", slog.String("host", host))
 		rm := exec.Command("ssh-keygen", "-R", host)
 		rm.Stderr = os.Stderr
 		if err := rm.Run(); err != nil {

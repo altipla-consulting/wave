@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log/slog"
 	"math/rand"
 	"os"
 	"os/exec"
@@ -12,7 +13,6 @@ import (
 
 	"github.com/altipla-consulting/errors"
 	"github.com/atlassian/go-sentry-api"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/altipla-consulting/wave/internal/env"
@@ -72,12 +72,12 @@ func init() {
 
 		version := query.VersionImageTag(command.Context())
 
-		log.WithFields(log.Fields{
-			"name":            app,
-			"version":         version,
-			"memory":          flagMemory,
-			"service-account": flagServiceAccount,
-		}).Info("Deploy app")
+		slog.Info("Deploy app",
+			slog.String("name", app),
+			slog.String("version", version),
+			slog.String("memory", flagMemory),
+			slog.String("service-account", flagServiceAccount),
+		)
 
 		env := []string{
 			"SENTRY_DSN=" + keys[0].DSN.Public,
@@ -113,7 +113,7 @@ func init() {
 			gcloud = append(gcloud, "--set-cloudsql-instances", strings.Join(instances, ","))
 		}
 
-		log.Debug(strings.Join(append([]string{"gcloud"}, gcloud...), " "))
+		slog.Debug(strings.Join(append([]string{"gcloud"}, gcloud...), " "))
 
 		for attempt := 0; attempt < maxDeployAttempts; attempt++ {
 			build := exec.Command("gcloud", gcloud...)
@@ -122,7 +122,7 @@ func init() {
 			build.Stderr = io.MultiWriter(os.Stderr, &buf)
 			if err = build.Run(); err != nil {
 				if shouldRetryDeploy(buf.String()) {
-					log.Warning("Deployment failed because of a concurrent operation. Retrying in a moment.")
+					slog.Warn("Deployment failed because of a concurrent operation. Retrying in a moment.")
 					time.Sleep(time.Duration(rand.Intn(15)+1) * time.Second)
 					continue
 				}

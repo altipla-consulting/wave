@@ -3,12 +3,12 @@ package gerrit
 import (
 	"encoding/base64"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"strings"
 
 	"github.com/altipla-consulting/errors"
-	log "github.com/sirupsen/logrus"
 )
 
 func ChangeNumber() string {
@@ -59,7 +59,7 @@ func Comment(msg string) error {
 		"gerrit", "review", fmt.Sprintf("%v,%v", ChangeNumber(), PatchSet()),
 		"--message", `"` + msg + `"`,
 	}
-	log.Debug(strings.Join(ssh, " "))
+	slog.Debug(strings.Join(ssh, " "))
 	comment := exec.Command(ssh[0], ssh[1:]...)
 	comment.Stdout = os.Stdout
 	comment.Stderr = os.Stderr

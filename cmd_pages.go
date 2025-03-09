@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"strings"
 
 	"github.com/altipla-consulting/errors"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/altipla-consulting/wave/internal/gerrit"
@@ -29,9 +29,7 @@ func init() {
 	cmdPages.MarkFlagRequired("project")
 
 	cmdPages.RunE = func(command *cobra.Command, args []string) error {
-		logger := log.WithFields(log.Fields{
-			"branch": gerrit.SimulatedBranch(),
-		})
+		logger := slog.With(slog.String("branch", gerrit.SimulatedBranch()))
 		logger.Info("Build app")
 
 		logger.Info("Deploy to Cloudflare Pages")
@@ -47,7 +45,7 @@ func init() {
 			wrangler = append(wrangler, "--branch", "main")
 		}
 		wrangler = append(wrangler, flagSource)
-		log.Debug(strings.Join(wrangler, " "))
+		slog.Debug(strings.Join(wrangler, " "))
 		deploy := exec.Command(wrangler[0], wrangler[1:]...)
 		deploy.Stdout = os.Stdout
 		deploy.Stderr = os.Stderr

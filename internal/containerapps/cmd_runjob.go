@@ -2,13 +2,13 @@ package containerapps
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"strings"
 	"time"
 
 	"github.com/altipla-consulting/errors"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -30,10 +30,7 @@ func init() {
 	cmdRunJob.RunE = func(cmd *cobra.Command, args []string) error {
 		jobName := args[0]
 
-		logger := log.WithFields(log.Fields{
-			"name": jobName,
-		})
-		logger.Info("Start job")
+		slog.Info("Start job", slog.String("name", jobName))
 
 		auth := exec.CommandContext(cmd.Context(), "az", "account", "set", "--subscription", flagSubscription)
 		auth.Stdout = os.Stdout
@@ -54,7 +51,7 @@ func init() {
 			return errors.Trace(err)
 		}
 
-		logger.Info("Wait for job completion")
+		slog.Info("Wait for job completion")
 		wait := []string{
 			"containerapp", "job", "execution", "list",
 			"--name", jobName,
@@ -71,7 +68,7 @@ func init() {
 			}
 
 			status := strings.TrimSpace(string(output))
-			logger.WithField("status", status).Debug("Job status")
+			slog.Debug("Job status", slog.String("status", status))
 
 			switch status {
 			case "Running":
@@ -79,7 +76,7 @@ func init() {
 				os.Stdout.Sync()
 			case "Succeeded":
 				fmt.Println()
-				logger.Info("Job completed successfully")
+				slog.Info("Job completed successfully!")
 				return nil
 			case "Failed":
 				fmt.Println()

@@ -2,13 +2,13 @@ package main
 
 import (
 	"encoding/json"
+	"log/slog"
 	"os"
 	"os/exec"
 	"strings"
 
 	"github.com/altipla-consulting/errors"
 	"github.com/atlassian/go-sentry-api"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/altipla-consulting/wave/internal/env"
@@ -43,8 +43,8 @@ func init() {
 			return errors.Trace(err)
 		}
 
-		logger := log.WithField("machine", config.ServiceName)
-		logger.WithField("version", query.Version(cmd.Context())).Info("Deploy to Lightsail Containers")
+		logger := slog.With(slog.String("machine", config.ServiceName))
+		logger.Info("Deploy to Lightsail Containers", slog.String("version", query.Version(cmd.Context())))
 
 		var mapErr error
 		var mapFn = func(placeholder string) string {
@@ -89,7 +89,7 @@ func init() {
 		if _, err := tmpFile.Write(content); err != nil {
 			return errors.Trace(err)
 		}
-		log.WithField("file", tmpFile.Name()).Info("Using deployment file")
+		logger.Info("Using deployment file", slog.String("file", tmpFile.Name()))
 
 		create := []string{
 			"aws", "lightsail",

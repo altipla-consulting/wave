@@ -2,12 +2,12 @@ package containerapps
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 
 	"github.com/altipla-consulting/errors"
 	"github.com/atlassian/go-sentry-api"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/altipla-consulting/wave/internal/env"
@@ -38,10 +38,7 @@ func init() {
 		app := args[0]
 
 		version := query.VersionImageTag(cmd.Context())
-		logger := log.WithFields(log.Fields{
-			"name":    app,
-			"version": version,
-		})
+		logger := slog.With(slog.String("name", app), slog.String("version", version))
 		logger.Info("Deploy app")
 
 		client, err := sentry.NewClient(env.SentryAuthToken(), nil, nil)

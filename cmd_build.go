@@ -1,12 +1,12 @@
 package main
 
 import (
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
 
 	"github.com/altipla-consulting/errors"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/altipla-consulting/wave/internal/env"
@@ -32,10 +32,7 @@ func init() {
 			flagProject = env.GoogleProject()
 		}
 
-		logger := log.WithFields(log.Fields{
-			"name":    app,
-			"version": query.Version(command.Context()),
-		})
+		logger := slog.With(slog.String("name", app), slog.String("version", query.Version(command.Context())))
 
 		source := app
 		if flagSource != "" {

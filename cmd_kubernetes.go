@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"sort"
@@ -16,7 +17,6 @@ import (
 	"github.com/google/go-jsonnet"
 	"github.com/google/go-jsonnet/ast"
 	"github.com/joho/godotenv"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/altipla-consulting/wave/embed"
@@ -62,10 +62,7 @@ func init() {
 			return nil
 		}
 
-		log.WithFields(log.Fields{
-			"filename": args[0],
-			"version":  query.Version(command.Context()),
-		}).Info("Deploy generated file")
+		slog.Info("Deploy generated file", slog.String("filename", args[0]), slog.String("version", query.Version(command.Context())))
 
 		apply := exec.Command("kubectl", "apply", "-f", "-")
 		apply.Stdout = os.Stdout

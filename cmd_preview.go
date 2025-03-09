@@ -1,12 +1,13 @@
 package main
 
 import (
+	"fmt"
+	"log/slog"
 	"net/url"
 	"os/exec"
 	"strings"
 
 	"github.com/altipla-consulting/errors"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/altipla-consulting/wave/internal/env"
@@ -56,7 +57,7 @@ func init() {
 			)
 			output, err := suffixcmd.CombinedOutput()
 			if err != nil {
-				log.Error(string(output))
+				slog.Error(string(output))
 				return errors.Trace(err)
 			}
 			u, err := url.Parse(strings.TrimSpace(string(output)))
@@ -91,9 +92,9 @@ func init() {
 			previews = append(previews, local+" :: https://"+host+"."+remote+".pages.dev/")
 		}
 
-		log.Info("Send preview URLs as a Gerrit comment")
+		slog.Info("Send preview URLs as a Gerrit comment")
 		for _, preview := range previews {
-			log.Println(preview)
+			fmt.Println(preview)
 		}
 		if err := gerrit.Comment("Previews deployed at:\n" + strings.Join(previews, "\n")); err != nil {
 			return errors.Trace(err)

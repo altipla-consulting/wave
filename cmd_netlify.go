@@ -1,12 +1,12 @@
 package main
 
 import (
+	"log/slog"
 	"os"
 	"os/exec"
 	"strings"
 
 	"github.com/altipla-consulting/errors"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/altipla-consulting/wave/internal/query"
@@ -27,7 +27,7 @@ func init() {
 	cmdNetlify.RunE = func(command *cobra.Command, args []string) error {
 		site := args[0]
 
-		log.Info("Get last commit message")
+		slog.Info("Get last commit message")
 		cmd := exec.Command("git", "log", "-1", "--pretty=%B")
 		output, err := cmd.CombinedOutput()
 		if err != nil {
@@ -42,10 +42,7 @@ func init() {
 		}
 		lastCommit := strings.TrimSpace(strings.Join(filtered, "\n"))
 
-		log.WithFields(log.Fields{
-			"name":    site,
-			"version": query.Version(command.Context()),
-		}).Info("Deploy Netlify site")
+		slog.Info("Deploy Netlify site", slog.String("name", site), slog.String("version", query.Version(command.Context())))
 
 		netlify := []string{
 			"netlify",
@@ -60,7 +57,7 @@ func init() {
 		if query.IsRelease() {
 			netlify = append(netlify, "--prod")
 		}
-		log.Debug(strings.Join(netlify, " "))
+		slog.Debug(strings.Join(netlify, " "))
 		build := exec.Command(netlify[0], netlify[1:]...)
 		build.Stdout = os.Stdout
 		build.Stderr = os.Stderr
