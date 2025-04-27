@@ -14,26 +14,27 @@ import (
 	"github.com/altipla-consulting/wave/internal/query"
 )
 
-var cmdBuild = &cobra.Command{
-	Use:     "build",
+var cmdDeploy = &cobra.Command{
+	Use:     "deploy",
+	Aliases: []string{"build"},
 	Short:   "Deploy the application to Azure Container Apps.",
-	Example: "wave container-apps build foo --subscription 1234-5678-9012-3456 --resource-group foo-rg",
+	Example: "wave container-apps deploy foo --subscription 1234-5678-9012-3456 --resource-group foo-rg",
 	Args:    cobra.ExactArgs(1),
 }
 
 func init() {
 	var flagRepo, flagSubscription, flagResourceGroup string
 	var flagSentry string
-	cmdBuild.Flags().StringVar(&flagRepo, "repo", "", "Azure Container Registry repository name where the container will be stored.")
-	cmdBuild.Flags().StringVar(&flagSubscription, "subscription", "", "Azure subscription ID.")
-	cmdBuild.Flags().StringVar(&flagResourceGroup, "resource-group", "", "Azure resource group where the container has been stored. Use `wave acr` to upload it previously.")
-	cmdBuild.Flags().StringVar(&flagSentry, "sentry", "", "Name of the sentry project to configure.")
-	cmdBuild.MarkFlagRequired("repo")
-	cmdBuild.MarkFlagRequired("subscription")
-	cmdBuild.MarkFlagRequired("resource-group")
-	cmdBuild.MarkFlagRequired("sentry")
+	cmdDeploy.Flags().StringVar(&flagRepo, "repo", "", "Azure Container Registry repository name where the container will be stored.")
+	cmdDeploy.Flags().StringVar(&flagSubscription, "subscription", "", "Azure subscription ID.")
+	cmdDeploy.Flags().StringVar(&flagResourceGroup, "resource-group", "", "Azure resource group where the container has been stored. Use `wave acr` to upload it previously.")
+	cmdDeploy.Flags().StringVar(&flagSentry, "sentry", "", "Name of the sentry project to configure.")
+	cmdDeploy.MarkFlagRequired("repo")
+	cmdDeploy.MarkFlagRequired("subscription")
+	cmdDeploy.MarkFlagRequired("resource-group")
+	cmdDeploy.MarkFlagRequired("sentry")
 
-	cmdBuild.RunE = func(cmd *cobra.Command, args []string) error {
+	cmdDeploy.RunE = func(cmd *cobra.Command, args []string) error {
 		app := args[0]
 
 		version := query.VersionImageTag(cmd.Context())

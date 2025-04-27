@@ -11,7 +11,7 @@ var Cmd = &cobra.Command{
 }
 
 func init() {
-	Cmd.AddCommand(cmdBuild)
-	Cmd.AddCommand(cmdBuildJob)
+	Cmd.AddCommand(cmdDeploy)
+	Cmd.AddCommand(cmdDeployJob)
 	Cmd.AddCommand(cmdRunJob)
 }

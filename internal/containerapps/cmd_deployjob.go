@@ -14,27 +14,27 @@ import (
 	"github.com/altipla-consulting/wave/internal/query"
 )
 
-var cmdBuildJob = &cobra.Command{
-	Use:     "build-job",
-	Aliases: []string{"buildjob"},
+var cmdDeployJob = &cobra.Command{
+	Use:     "deploy-job",
+	Aliases: []string{"deployjob", "buildjob", "build-job"},
 	Short:   "Deploy the job to Azure Container Apps.",
-	Example: "wave container-apps build-job foo --subscription 1234-5678-9012-3456 --resource-group foo-rg",
+	Example: "wave container-apps deploy-job foo --subscription 1234-5678-9012-3456 --resource-group foo-rg",
 	Args:    cobra.ExactArgs(1),
 }
 
 func init() {
 	var flagRepo, flagSubscription, flagResourceGroup string
 	var flagSentry string
-	cmdBuildJob.Flags().StringVar(&flagRepo, "repo", "", "Azure Container Registry repository name where the container will be stored.")
-	cmdBuildJob.Flags().StringVar(&flagSubscription, "subscription", "", "Azure subscription ID.")
-	cmdBuildJob.Flags().StringVar(&flagResourceGroup, "resource-group", "", "Azure resource group where the container has been stored. Use `wave acr` to upload it previously.")
-	cmdBuildJob.Flags().StringVar(&flagSentry, "sentry", "", "Name of the sentry project to configure.")
-	cmdBuildJob.MarkFlagRequired("repo")
-	cmdBuildJob.MarkFlagRequired("subscription")
-	cmdBuildJob.MarkFlagRequired("resource-group")
-	cmdBuildJob.MarkFlagRequired("sentry")
+	cmdDeployJob.Flags().StringVar(&flagRepo, "repo", "", "Azure Container Registry repository name where the container will be stored.")
+	cmdDeployJob.Flags().StringVar(&flagSubscription, "subscription", "", "Azure subscription ID.")
+	cmdDeployJob.Flags().StringVar(&flagResourceGroup, "resource-group", "", "Azure resource group where the container has been stored. Use `wave acr` to upload it previously.")
+	cmdDeployJob.Flags().StringVar(&flagSentry, "sentry", "", "Name of the sentry project to configure.")
+	cmdDeployJob.MarkFlagRequired("repo")
+	cmdDeployJob.MarkFlagRequired("subscription")
+	cmdDeployJob.MarkFlagRequired("resource-group")
+	cmdDeployJob.MarkFlagRequired("sentry")
 
-	cmdBuildJob.RunE = func(cmd *cobra.Command, args []string) error {
+	cmdDeployJob.RunE = func(cmd *cobra.Command, args []string) error {
 		app := args[0]
 
 		version := query.VersionImageTag(cmd.Context())

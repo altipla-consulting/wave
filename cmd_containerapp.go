@@ -19,7 +19,7 @@ var cmdContainerApp = &cobra.Command{
 	Short:      "Deploy the application to Azure Container Apps.",
 	Example:    "wave containerapp foo --subscription 1234-5678-9012-3456 --resource-group foo-rg",
 	Args:       cobra.ExactArgs(1),
-	Deprecated: "use `wave container-apps build` instead",
+	Deprecated: "use `wave container-apps deploy` instead",
 }
 
 func init() {
