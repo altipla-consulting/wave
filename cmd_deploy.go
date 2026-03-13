@@ -32,11 +32,13 @@ func init() {
 	var flagProject, flagRegion, flagRepo string
 	var flagSentry string
 	var flagTag string
+	var flagWorkerPool bool
 	cmdDeploy.Flags().StringVar(&flagProject, "project", "", "Google Cloud project where the container will be stored. Defaults to the GOOGLE_PROJECT environment variable.")
 	cmdDeploy.Flags().StringVar(&flagRegion, "region", "europe-west1", "Region where resources will be hosted.")
 	cmdDeploy.Flags().StringVar(&flagRepo, "repo", "", "Artifact Registry repository name where the container is stored.")
 	cmdDeploy.Flags().StringVar(&flagSentry, "sentry", "", "Name of the sentry project to configure.")
 	cmdDeploy.Flags().StringVar(&flagTag, "tag", "", "Name of the revision included in the URL. Defaults to the Gerrit change and patchset.")
+	cmdDeploy.Flags().BoolVar(&flagWorkerPool, "worker-pool", false, "Deploy as a Cloud Run worker pool instead of a service.")
 	cmdDeploy.MarkFlagRequired("sentry")
 
 	cmdDeploy.RunE = func(command *cobra.Command, args []string) error {
@@ -72,16 +74,20 @@ func init() {
 			"SENTRY_DSN=" + keys[0].DSN.Public,
 			"VERSION=" + version,
 		}
-		gcloud := []string{
-			"beta", "run", "deploy",
+		gcloud := []string{"beta", "run"}
+		if flagWorkerPool {
+			gcloud = append(gcloud, "worker-pools")
+		}
+		gcloud = append(gcloud,
+			"deploy",
 			app,
 			"--image", image,
 			"--region", flagRegion,
-			"--platform", "managed",
+			"--project", flagProject,
 			"--update-env-vars", strings.Join(env, ","),
-			"--labels", "app=" + app,
-		}
-		if tag := query.VersionHostname(flagTag); tag != "" {
+			"--labels", "app="+app,
+		)
+		if tag := query.VersionHostname(flagTag); tag != "" && !flagWorkerPool {
 			if !query.IsRelease() {
 				gcloud = append(gcloud, "--no-traffic")
 			}
@@ -106,7 +112,7 @@ func init() {
 			break
 		}
 
-		if query.IsRelease() && flagTag == "" {
+		if query.IsRelease() && flagTag == "" && !flagWorkerPool {
 			slog.Info("Enable traffic to the latest version of the app", slog.String("name", app), slog.String("version", version))
 
 			traffic := exec.Command(
