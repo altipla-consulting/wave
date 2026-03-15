@@ -88,7 +88,7 @@ func init() {
 			var buf bytes.Buffer
 			build.Stderr = io.MultiWriter(os.Stderr, &buf)
 			if err = build.Run(); err != nil {
-				if shouldRetryDeploy(buf.String()) {
+				if shouldRetryDeployWorker(buf.String()) {
 					slog.Warn("Deployment failed because of a concurrent operation. Retrying in a moment.")
 					time.Sleep(time.Duration(rand.Intn(15)+1) * time.Second)
 					continue
@@ -100,4 +100,15 @@ func init() {
 
 		return nil
 	}
+}
+
+func shouldRetryDeployWorker(s string) bool {
+	if strings.Contains(s, "ABORTED: Conflict for resource") && strings.Contains(s, "was specified but current version is") {
+		return true
+	}
+	if strings.Contains(s, "Resource readiness deadline exceeded") {
+		return true
+	}
+
+	return false
 }
