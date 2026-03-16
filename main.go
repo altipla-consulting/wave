@@ -7,6 +7,7 @@ import (
 
 	"github.com/altipla-consulting/wave/internal/containerapps"
 	"github.com/altipla-consulting/wave/internal/debug"
+	"github.com/altipla-consulting/wave/internal/workerpools"
 )
 
 func main() {
@@ -38,4 +39,5 @@ func init() {
 	cmdRoot.AddCommand(cmdVersion)
 	cmdRoot.AddCommand(debug.Cmd)
 	cmdRoot.AddCommand(containerapps.Cmd)
+	cmdRoot.AddCommand(workerpools.Cmd)
 }
