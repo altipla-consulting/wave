@@ -38,5 +38,5 @@ func init() {
 	cmdRoot.AddCommand(cmdVersion)
 	cmdRoot.AddCommand(debug.Cmd)
 	cmdRoot.AddCommand(containerapps.Cmd)
-	cmdRoot.AddCommand(cmdWorker)
+	cmdRoot.AddCommand(cmdWorkerPools)
 }
