@@ -1,4 +1,4 @@
-package main
+package workerpools
 
 import (
 	"bytes"
@@ -17,23 +17,23 @@ import (
 	"github.com/altipla-consulting/wave/internal/query"
 )
 
-var cmdWorkerPools = &cobra.Command{
-	Use:     "worker-pools",
+var cmdDeploy = &cobra.Command{
+	Use:     "deploy",
 	Short:   "Deploy a container to Cloud Run Worker Pools.",
-	Example: "wave worker-pools foo",
+	Example: "wave worker-pools deploy foo",
 	Args:    cobra.ExactArgs(1),
 }
 
 func init() {
 	var flagProject, flagRegion, flagRepo string
 	var flagSentry string
-	cmdWorkerPools.Flags().StringVar(&flagProject, "project", "", "Google Cloud project where the container will be stored. Defaults to the GOOGLE_PROJECT environment variable.")
-	cmdWorkerPools.Flags().StringVar(&flagRegion, "region", "europe-west1", "Region where resources will be hosted.")
-	cmdWorkerPools.Flags().StringVar(&flagRepo, "repo", "", "Artifact Registry repository name where the container is stored.")
-	cmdWorkerPools.Flags().StringVar(&flagSentry, "sentry", "", "Name of the sentry project to configure.")
-	cmdWorkerPools.MarkFlagRequired("sentry")
+	cmdDeploy.Flags().StringVar(&flagProject, "project", "", "Google Cloud project where the container will be stored. Defaults to the GOOGLE_PROJECT environment variable.")
+	cmdDeploy.Flags().StringVar(&flagRegion, "region", "europe-west1", "Region where resources will be hosted.")
+	cmdDeploy.Flags().StringVar(&flagRepo, "repo", "", "Artifact Registry repository name where the container is stored.")
+	cmdDeploy.Flags().StringVar(&flagSentry, "sentry", "", "Name of the sentry project to configure.")
+	cmdDeploy.MarkFlagRequired("sentry")
 
-	cmdWorkerPools.RunE = func(command *cobra.Command, args []string) error {
+	cmdDeploy.RunE = func(command *cobra.Command, args []string) error {
 		if flagProject == "" {
 			flagProject = env.GoogleProject()
 		}
@@ -86,4 +86,8 @@ func init() {
 
 		return nil
 	}
+}
+
+func sentryAPIString(s string) *string {
+	return &s
 }
