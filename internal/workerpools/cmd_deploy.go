@@ -67,7 +67,7 @@ func init() {
 			"VERSION=" + version,
 		}
 		gcloud := []string{
-			"beta", "run", "worker-pools", "deploy",
+			"run", "worker-pools", "deploy",
 			worker,
 			"--image", image,
 			"--region", flagRegion,
