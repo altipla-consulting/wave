@@ -22,10 +22,11 @@ var cmdAR = &cobra.Command{
 }
 
 func init() {
-	var flagProject, flagRepo, flagSource string
+	var flagProject, flagRepo, flagSource, flagDockerfile string
 	cmdAR.Flags().StringVar(&flagProject, "project", "", "Google Cloud project where the container will be stored. Defaults to the GOOGLE_PROJECT environment variable.")
 	cmdAR.Flags().StringVar(&flagRepo, "repo", "", "Artifact Registry repository name where the container will be stored.")
 	cmdAR.Flags().StringVar(&flagSource, "source", "", "Source folder. Defaults to a folder with the name of the app.")
+	cmdAR.Flags().StringVar(&flagDockerfile, "dockerfile", "", "Dockerfile to use. Defaults to Dockerfile in the source folder.")
 	cmdAR.MarkFlagRequired("repo")
 
 	cmdAR.RunE = func(cmd *cobra.Command, args []string) error {
@@ -45,10 +46,15 @@ func init() {
 		}
 		image := fmt.Sprintf("europe-west1-docker.pkg.dev/%s/%s/%s", flagProject, flagRepo, app)
 
+		dockerfile := "Dockerfile"
+		if flagDockerfile != "" {
+			dockerfile = flagDockerfile
+		}
+
 		docker := []string{
 			"build",
 			"--cache-from", image + ":latest",
-			"-f", source + "/Dockerfile",
+			"-f", source + "/" + dockerfile,
 			"-t", image + ":latest",
 			"-t", image + ":" + version,
 		}
