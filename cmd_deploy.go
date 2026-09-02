@@ -13,6 +13,7 @@ import (
 
 	"github.com/altipla-consulting/errors"
 	"github.com/atlassian/go-sentry-api"
+	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 
 	"github.com/altipla-consulting/wave/internal/env"
@@ -29,13 +30,15 @@ var cmdDeploy = &cobra.Command{
 func init() {
 	const maxDeployAttempts = 2
 
+	var flagEnvFile string
+	cmdDeploy.Flags().StringVar(&flagEnvFile, "env-file", "", "File with custom environment variables to define.")
 	var flagProject, flagRegion, flagRepo string
-	var flagSentry string
-	var flagTag string
 	cmdDeploy.Flags().StringVar(&flagProject, "project", "", "Google Cloud project where the container will be stored. Defaults to the GOOGLE_PROJECT environment variable.")
 	cmdDeploy.Flags().StringVar(&flagRegion, "region", "europe-west1", "Region where resources will be hosted.")
 	cmdDeploy.Flags().StringVar(&flagRepo, "repo", "", "Artifact Registry repository name where the container is stored.")
+	var flagSentry string
 	cmdDeploy.Flags().StringVar(&flagSentry, "sentry", "", "Name of the sentry project to configure.")
+	var flagTag string
 	cmdDeploy.Flags().StringVar(&flagTag, "tag", "", "Name of the revision included in the URL. Defaults to the Gerrit change and patchset.")
 	cmdDeploy.MarkFlagRequired("sentry")
 
@@ -68,18 +71,45 @@ func init() {
 			image = fmt.Sprintf("europe-west1-docker.pkg.dev/%s/%s/%s:%s", flagProject, flagRepo, app, imageTag)
 		}
 
-		env := []string{
-			"SENTRY_DSN=" + keys[0].DSN.Public,
-			"VERSION=" + version,
-		}
 		gcloud := []string{
 			"beta", "run", "deploy",
 			app,
 			"--image", image,
 			"--region", flagRegion,
 			"--platform", "managed",
-			"--update-env-vars", strings.Join(env, ","),
 			"--labels", "app=" + app,
+		}
+		if flagEnvFile == "" {
+			env := []string{
+				"SENTRY_DSN=" + keys[0].DSN.Public,
+				"VERSION=" + version,
+			}
+			gcloud = append(gcloud, "--update-env-vars", strings.Join(env, ","))
+		} else {
+			env, err := godotenv.Read(flagEnvFile)
+			if err != nil {
+				return errors.Trace(err)
+			}
+			env["SENTRY_DSN"] = keys[0].DSN.Public
+			env["VERSION"] = version
+
+			content, err := godotenv.Marshal(env)
+			if err != nil {
+				return errors.Trace(err)
+			}
+			tmpFile, err := os.CreateTemp("", "wave-env-*.env")
+			if err != nil {
+				return errors.Trace(err)
+			}
+			defer os.Remove(tmpFile.Name())
+			if _, err := tmpFile.WriteString(content + "\n"); err != nil {
+				tmpFile.Close()
+				return errors.Trace(err)
+			}
+			if err := tmpFile.Close(); err != nil {
+				return errors.Trace(err)
+			}
+			gcloud = append(gcloud, "--env-vars-file="+tmpFile.Name())
 		}
 		if tag := query.VersionHostname(flagTag); tag != "" {
 			if !query.IsRelease() {
